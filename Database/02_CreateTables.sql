@@ -316,6 +316,9 @@ CREATE TABLE Payments
 
     CONSTRAINT CK_Payments_Amount
         CHECK (Amount >= 0),
+    
+    CONSTRAINT UQ_Payments_OrderId
+        UNIQUE (OrderId),
 
     CONSTRAINT CK_Payments_Method
         CHECK
