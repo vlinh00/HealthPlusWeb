@@ -9,4 +9,6 @@ public interface IOrderRepository
     Task<List<Order>> GetByUserIdAsync(int userId);
 
     Task<Order?> GetByIdAsync(int userId, int orderId);
+
+    Task<Order?> GetByIdForUpdateAsync(int userId, int orderId);
 }
