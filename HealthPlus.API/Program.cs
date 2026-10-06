@@ -72,38 +72,30 @@ builder.Services
 // Repositories
 // =========================
 
-builder.Services.AddScoped<
-    IProductRepository,
-    ProductRepository>();
+builder.Services.AddScoped<IProductRepository,ProductRepository>();
 
-builder.Services.AddScoped<
-    IUserRepository,
-    UserRepository>();
+builder.Services.AddScoped<IUserRepository,UserRepository>();
 
-builder.Services.AddScoped<
-    ICartRepository,
-    CartRepository>();
+builder.Services.AddScoped<ICartRepository,CartRepository>();
 
 builder.Services.AddScoped<IOrderRepository, OrderRepository>();
+
+builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
 
 
 // =========================
 // Services
 // =========================
 
-builder.Services.AddScoped<
-    IProductService,
-    ProductService>();
+builder.Services.AddScoped<IProductService,ProductService>();
 
-builder.Services.AddScoped<
-    IAuthService,
-    AuthService>();
+builder.Services.AddScoped<IAuthService,AuthService>();
 
-builder.Services.AddScoped<
-    ICartService,
-    CartService>();
+builder.Services.AddScoped<ICartService,CartService>();
 
 builder.Services.AddScoped<IOrderService, OrderService>();
+
+builder.Services.AddScoped<IPaymentService, PaymentService>();
 // =========================
 // Swagger
 // =========================

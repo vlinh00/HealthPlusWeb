@@ -42,4 +42,14 @@ public class OrderRepository : IOrderRepository
                 x.Id == orderId &&
                 x.UserId == userId);
     }
+
+    public async Task<Order?> GetByIdForUpdateAsync(
+    int userId,
+    int orderId)
+{
+    return await _context.Orders
+        .FirstOrDefaultAsync(x =>
+            x.Id == orderId &&
+            x.UserId == userId);
+}
 }
