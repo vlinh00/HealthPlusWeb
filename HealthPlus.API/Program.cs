@@ -80,6 +80,9 @@ builder.Services.AddScoped<
     IUserRepository,
     UserRepository>();
 
+builder.Services.AddScoped<
+    ICartRepository,
+    CartRepository>();
 
 // =========================
 // Services
@@ -93,6 +96,9 @@ builder.Services.AddScoped<
     IAuthService,
     AuthService>();
 
+builder.Services.AddScoped<
+    ICartService,
+    CartService>();
 
 // =========================
 // Swagger
