@@ -84,6 +84,9 @@ builder.Services.AddScoped<
     ICartRepository,
     CartRepository>();
 
+builder.Services.AddScoped<IOrderRepository, OrderRepository>();
+
+
 // =========================
 // Services
 // =========================
@@ -100,6 +103,7 @@ builder.Services.AddScoped<
     ICartService,
     CartService>();
 
+builder.Services.AddScoped<IOrderService, OrderService>();
 // =========================
 // Swagger
 // =========================
