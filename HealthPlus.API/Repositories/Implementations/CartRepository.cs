@@ -24,6 +24,15 @@ public class CartRepository : ICartRepository
             .ToListAsync();
     }
 
+    public async Task<List<CartItem>> GetByUserIdForUpdateAsync(int userId)
+{
+    return await _context.CartItems
+        .Include(x => x.Product)
+        .Where(x => x.UserId == userId)
+        .OrderBy(x => x.Id)
+        .ToListAsync();
+}
+
     public async Task<CartItem?> GetItemAsync(int userId, int productId)
     {
         return await _context.CartItems
@@ -51,4 +60,6 @@ public class CartRepository : ICartRepository
         _context.CartItems.Remove(cartItem);
         await _context.SaveChangesAsync();
     }
+
+    
 }
