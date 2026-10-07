@@ -5,7 +5,7 @@ var e=!1;const t=async()=>WebAssembly.validate(new Uint8Array([0,97,115,109,1,0,
   "mainAssemblyName": "HealthPlus.Client",
   "applicationEnvironment": "Development",
   "resources": {
-    "hash": "sha256-C4LeUUr64qVl+gl2dmWmhy8XXjTZ/w7yoywgxim4r/U=",
+    "hash": "sha256-X7uHW1kczhbp049wYEngSCmBZp5M27donZlV7Ow7xgQ=",
     "jsModuleNative": [
       {
         "name": "dotnet.native.b6l13xorvf.js"
@@ -68,6 +68,12 @@ var e=!1;const t=async()=>WebAssembly.validate(new Uint8Array([0,97,115,109,1,0,
         "virtualPath": "Microsoft.AspNetCore.Components.wasm",
         "name": "Microsoft.AspNetCore.Components.aimal0hppb.wasm",
         "hash": "sha256-juoEIPp8RoC3PtrYH2MiQ/vyn/IGIPt+jyvP9wnRflg=",
+        "cache": "force-cache"
+      },
+      {
+        "virtualPath": "Microsoft.AspNetCore.Components.Authorization.wasm",
+        "name": "Microsoft.AspNetCore.Components.Authorization.ma86ed1p9u.wasm",
+        "hash": "sha256-fuFpRWWd7dM2CSGD5uZrE3u6ehVplfizY8LGJx370iQ=",
         "cache": "force-cache"
       },
       {
@@ -1242,16 +1248,16 @@ var e=!1;const t=async()=>WebAssembly.validate(new Uint8Array([0,97,115,109,1,0,
       },
       {
         "virtualPath": "HealthPlus.Client.wasm",
-        "name": "HealthPlus.Client.w539rz4fcm.wasm",
-        "hash": "sha256-vCCr6096ZULZY3Mm9XS6nG42eaxVaam0qc2t6sn1AYg=",
+        "name": "HealthPlus.Client.4m8s7z083h.wasm",
+        "hash": "sha256-ZBK7y2h9Sf+NGVgY6+XWJsDAanKlVwgWc44oV3gZges=",
         "cache": "force-cache"
       }
     ],
     "pdb": [
       {
         "virtualPath": "HealthPlus.Client.pdb",
-        "name": "HealthPlus.Client.e7jelqiynf.pdb",
-        "hash": "sha256-utWfbCOxmeIgWKOrn89BpFWjKWyDxNouTzIHX2asZJE=",
+        "name": "HealthPlus.Client.vhv8s0kfj4.pdb",
+        "hash": "sha256-jRKmKqUeN0acneQFOoY9jbH5uuWRX8RL7BGoQVxww8g=",
         "cache": "force-cache"
       }
     ],
@@ -1267,6 +1273,10 @@ var e=!1;const t=async()=>WebAssembly.validate(new Uint8Array([0,97,115,109,1,0,
     ]
   },
   "debugLevel": -1,
+  "appsettings": [
+    "../appsettings.Development.json",
+    "../appsettings.json"
+  ],
   "globalizationMode": "sharded",
   "extensions": {
     "blazor": {}

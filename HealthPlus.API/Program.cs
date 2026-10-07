@@ -14,16 +14,6 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 
-
-// =========================
-// Database
-// =========================
-
-builder.Services.AddDbContext<HealthPlusDbContext>(options =>
-    options.UseSqlServer(
-        builder.Configuration.GetConnectionString("DefaultConnection")));
-
-
 // =========================
 // CORS
 // =========================
@@ -34,12 +24,21 @@ builder.Services.AddCors(options =>
     {
         policy
             .WithOrigins(
-                "https://localhost:7250",
-                "http://localhost:5169")
+                "http://localhost:5169",
+                "http://127.0.0.1:5169")
             .AllowAnyHeader()
             .AllowAnyMethod();
     });
 });
+
+// =========================
+// Database
+// =========================
+
+builder.Services.AddDbContext<HealthPlusDbContext>(options =>
+    options.UseSqlServer(
+        builder.Configuration.GetConnectionString("DefaultConnection")));
+
 
 // =========================
 // JWT Settings
@@ -157,7 +156,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+//app.UseHttpsRedirection();
 
 app.UseCors("AllowClient");
 
