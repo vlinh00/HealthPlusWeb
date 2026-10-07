@@ -52,4 +52,13 @@ public class OrderRepository : IOrderRepository
             x.Id == orderId &&
             x.UserId == userId);
 }
+
+    public async Task<List<Order>> GetAllAsync()
+{
+    return await _context.Orders
+        .AsNoTracking()
+        .Include(x => x.User)
+        .OrderByDescending(x => x.Id)
+        .ToListAsync();
+}
 }
