@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="HealthPlus.API/HealthPlus.API.csproj" />
+  <Project Path="HealthPlus.Client/HealthPlus.Client.csproj" />
+</Solution>

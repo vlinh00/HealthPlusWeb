@@ -1,0 +1,12 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "HealthPlus",
+            "type": "node-terminal",
+            "request": "launch",
+            "command": "echo 'HealthPlus started'"
+        }
+    ],
+    "compounds": []
+}
