@@ -68,6 +68,39 @@ public class OrderController : ControllerBase
                 result.Data!,
                 result.Message));
     }
+    [HttpGet("admin")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> GetAllForAdmin()
+    {
+        var orders = await _orderService.GetAllForAdminAsync();
+
+        return Ok(
+            ApiResponse<List<AdminOrderDto>>.Ok(orders));
+    }
+
+    [HttpPut("{orderId:int}/status")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> UpdateStatus(
+    int orderId,
+    UpdateOrderStatusRequest request)
+    {
+        var result =
+            await _orderService.UpdateStatusAsync(
+                orderId,
+                request.Status);
+
+        if (!result.Success)
+        {
+            return BadRequest(
+                ApiResponse<object?>.Fail(
+                    result.Message));
+        }
+
+        return Ok(
+            ApiResponse<object?>.Ok(
+                null,
+                result.Message));
+    }
 
     private int GetUserId()
     {

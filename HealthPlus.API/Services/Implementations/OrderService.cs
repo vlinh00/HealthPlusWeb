@@ -3,6 +3,7 @@ using HealthPlus.API.DTOs.Order;
 using HealthPlus.API.Entities;
 using HealthPlus.API.Repositories.Interfaces;
 using HealthPlus.API.Services.Interfaces;
+using Microsoft.EntityFrameworkCore;
 
 namespace HealthPlus.API.Services.Implementations;
 
@@ -171,6 +172,135 @@ public class OrderService : IOrderService
             true,
             "Success.",
             MapToDto(order));
+    }
+
+    public async Task<List<AdminOrderDto>> GetAllForAdminAsync()
+    {
+        var orders =
+            await _orderRepository.GetAllAsync();
+
+        return orders
+            .Select(x => new AdminOrderDto
+            {
+                Id = x.Id,
+
+                OrderCode = x.OrderCode,
+
+                UserId = x.UserId,
+
+                CustomerName =
+                    x.User.FullName,
+
+                CustomerEmail =
+                    x.User.Email,
+
+                CustomerPhone =
+                    x.User.Phone,
+
+                OrderDate =
+                    x.OrderDate,
+
+                TotalAmount =
+                    x.TotalAmount,
+
+                Status =
+                    x.Status,
+
+                PaymentStatus =
+                    x.PaymentStatus,
+
+                ShippingAddress =
+                    x.ShippingAddress,
+
+                Phone =
+                    x.Phone,
+
+                CreatedAt =
+                    x.CreatedAt
+            })
+            .ToList();
+    }
+
+    public async Task<(bool Success, string Message)>
+    UpdateStatusAsync(
+        int orderId,
+        string status)
+    {
+        status = status.Trim();
+
+        var validStatuses = new[]
+        {
+        "Pending",
+        "Processing",
+        "Shipped",
+        "Delivered",
+        "Cancelled"
+    };
+
+        if (!validStatuses.Contains(status))
+        {
+            return (
+                false,
+                "Invalid order status. Supported statuses: " +
+                "Pending, Processing, Shipped, Delivered, Cancelled.");
+        }
+
+        var order = await _context.Orders
+            .FirstOrDefaultAsync(x => x.Id == orderId);
+
+        if (order == null)
+        {
+            return (
+                false,
+                "Order not found.");
+        }
+
+        if (order.Status == "Delivered")
+        {
+            return (
+                false,
+                "Delivered order cannot be changed.");
+        }
+
+        if (order.Status == "Cancelled")
+        {
+            return (
+                false,
+                "Cancelled order cannot be changed.");
+        }
+
+        var oldStatus = order.Status;
+
+        var isValidTransition = oldStatus switch
+        {
+            "Pending" =>
+                status == "Processing" ||
+                status == "Cancelled",
+
+            "Processing" =>
+                status == "Shipped" ||
+                status == "Cancelled",
+
+            "Shipped" =>
+                status == "Delivered",
+
+            _ => false
+        };
+
+        if (!isValidTransition)
+        {
+            return (
+                false,
+                $"Cannot change order status from '{oldStatus}' to '{status}'.");
+        }
+
+        order.Status = status;
+
+        await _context.SaveChangesAsync();
+
+        return (
+            true,
+            $"Order status changed from '{oldStatus}' to '{status}' successfully.");
     }
 
     private static OrderDto MapToDto(Order order)
