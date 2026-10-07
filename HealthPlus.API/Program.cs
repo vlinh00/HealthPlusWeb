@@ -14,6 +14,22 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 
+// =========================
+// CORS
+// =========================
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowClient", policy =>
+    {
+        policy
+            .WithOrigins(
+                "http://localhost:5169",
+                "http://127.0.0.1:5169")
+            .AllowAnyHeader()
+            .AllowAnyMethod();
+    });
+});
 
 // =========================
 // Database
@@ -22,6 +38,7 @@ builder.Services.AddControllers();
 builder.Services.AddDbContext<HealthPlusDbContext>(options =>
     options.UseSqlServer(
         builder.Configuration.GetConnectionString("DefaultConnection")));
+
 
 // =========================
 // JWT Settings
@@ -139,8 +156,9 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+//app.UseHttpsRedirection();
 
+app.UseCors("AllowClient");
 
 // IMPORTANT:
 // Authentication must be before Authorization

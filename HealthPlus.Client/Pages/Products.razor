@@ -1,0 +1,438 @@
+@page "/products"
+
+@using HealthPlus.Client.Models.Common
+@using HealthPlus.Client.Models.Product
+@using HealthPlus.Client.Services
+
+@inject ApiService ApiService
+@inject NavigationManager Navigation
+
+<PageTitle>Sản phẩm | HealthPlus</PageTitle>
+
+<div class="shop-page">
+
+    <!-- Hero -->
+    <section class="shop-hero">
+        <div class="container">
+
+            <div class="hero-content">
+                <span class="hero-label">
+                    <i class="bi bi-heart-pulse"></i>
+                    HEALTHPLUS
+                </span>
+
+                <h1>
+                    Chăm sóc sức khỏe,
+                    <span>bắt đầu từ hôm nay.</span>
+                </h1>
+
+                <p>
+                    Khám phá các sản phẩm chăm sóc sức khỏe
+                    được lựa chọn dành cho bạn và gia đình.
+                </p>
+            </div>
+
+        </div>
+    </section>
+
+
+    <!-- Products -->
+    <section class="products-section">
+
+        <div class="container">
+
+            <!-- Toolbar -->
+            <div class="products-toolbar">
+
+                <div class="search-box">
+                    <i class="bi bi-search"></i>
+
+                    <input type="text"
+                           placeholder="Tìm kiếm sản phẩm..."
+                           @bind="searchText"
+                           @bind:event="oninput"
+                           @onkeydown="HandleSearchKeyDown" />
+                </div>
+
+                <div class="toolbar-right">
+
+                    <select class="filter-select"
+                            @bind="sort">
+                        <option value="">Sắp xếp</option>
+                        <option value="price_asc">
+                            Giá thấp → cao
+                        </option>
+                        <option value="price_desc">
+                            Giá cao → thấp
+                        </option>
+                        <option value="name_asc">
+                            Tên A → Z
+                        </option>
+                    </select>
+
+                    <button class="filter-button"
+                            @onclick="LoadProductsAsync">
+                        <i class="bi bi-sliders"></i>
+                        Lọc
+                    </button>
+
+                </div>
+
+            </div>
+
+
+            <!-- Result information -->
+            @if (products != null)
+            {
+                <div class="result-row">
+                    <div>
+                        <strong>Sản phẩm</strong>
+                        <span class="result-count">
+                            @products.TotalItems sản phẩm
+                        </span>
+                    </div>
+                </div>
+            }
+
+
+            <!-- Loading -->
+            @if (loading)
+            {
+                <div class="product-grid">
+
+                    @for (int i = 0; i < 8; i++)
+                    {
+                        <div class="product-card skeleton-card">
+
+                            <div class="skeleton skeleton-image"></div>
+
+                            <div class="product-content">
+                                <div class="skeleton skeleton-line"></div>
+                                <div class="skeleton skeleton-line short"></div>
+                                <div class="skeleton skeleton-price"></div>
+                            </div>
+
+                        </div>
+                    }
+
+                </div>
+            }
+
+            <!-- Error -->
+            else if (!string.IsNullOrWhiteSpace(errorMessage))
+            {
+                <div class="state-box error-state">
+
+                    <div class="state-icon">
+                        <i class="bi bi-exclamation-triangle"></i>
+                    </div>
+
+                    <h3>Không thể tải sản phẩm</h3>
+
+                    <p>
+                        @errorMessage
+                    </p>
+
+                    <button class="btn-primary"
+                            @onclick="LoadProductsAsync">
+                        Thử lại
+                    </button>
+
+                </div>
+            }
+
+            <!-- Empty -->
+            else if (products?.Items.Count == 0)
+            {
+                <div class="state-box">
+
+                    <div class="state-icon">
+                        <i class="bi bi-search"></i>
+                    </div>
+
+                    <h3>Không tìm thấy sản phẩm</h3>
+
+                    <p>
+                        Hãy thử tìm kiếm với từ khóa khác.
+                    </p>
+
+                </div>
+            }
+
+            <!-- Products -->
+            else if (products != null)
+            {
+                <div class="product-grid">
+
+                    @foreach (var product in products.Items)
+                    {
+                        <article class="product-card">
+
+                            <div class="product-image-wrapper">
+
+                                @if (!string.IsNullOrWhiteSpace(product.ImageUrl))
+                                {
+                                    <img src="@product.ImageUrl"
+                                         alt="@product.Name"
+                                         class="product-image"
+                                         @onerror="HandleImageError" />
+                                }
+                                else
+                                {
+                                    <div class="product-placeholder">
+                                        <i class="bi bi-capsule"></i>
+                                    </div>
+                                }
+
+                                @if (!product.IsActive)
+                                {
+                                    <span class="product-status">
+                                        Ngừng bán
+                                    </span>
+                                }
+
+                            </div>
+
+
+                            <div class="product-content">
+
+                                <span class="product-category">
+                                    @product.CategoryName
+                                </span>
+
+                                <button class="product-name"
+                                        @onclick="() => OpenProduct(product.Id)">
+                                    @product.Name
+                                </button>
+
+                                <div class="stock-info">
+
+                                    @if (product.Stock > 0)
+                                    {
+                                        <span>
+                                            <i class="bi bi-check-circle-fill"></i>
+                                            Còn @product.Stock sản phẩm
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="out-of-stock">
+                                            Hết hàng
+                                        </span>
+                                    }
+
+                                </div>
+
+
+                                <div class="product-bottom">
+
+                                    <div class="product-price">
+                                        @product.Price.ToString("N0")<small>đ</small>
+                                    </div>
+
+                                    <button class="add-cart-button"
+                                            disabled="@(product.Stock <= 0 || !product.IsActive)"
+                                            @onclick="() => AddToCartAsync(product)">
+
+                                        <i class="bi bi-bag-plus"></i>
+
+                                        <span>Thêm vào giỏ</span>
+
+                                    </button>
+
+                                </div>
+
+                            </div>
+
+                        </article>
+                    }
+
+                </div>
+
+
+                <!-- Pagination -->
+                @if (products.TotalPages > 1)
+                {
+                    <div class="pagination">
+
+                        <button disabled="@(page <= 1)"
+                                @onclick="PreviousPage">
+                            <i class="bi bi-chevron-left"></i>
+                        </button>
+
+                        @for (int i = 1; i <= products.TotalPages; i++)
+                        {
+                            var pageNumber = i;
+
+                            <button class="@(pageNumber == page ? "active" : "")"
+                                    @onclick="() => GoToPage(pageNumber)">
+                                @pageNumber
+                            </button>
+                        }
+
+                        <button disabled="@(page >= products.TotalPages)"
+                                @onclick="NextPage">
+                            <i class="bi bi-chevron-right"></i>
+                        </button>
+
+                    </div>
+                }
+
+            }
+
+        </div>
+
+    </section>
+
+</div>
+
+
+@if (!string.IsNullOrWhiteSpace(toastMessage))
+{
+    <div class="toast-message">
+        <i class="bi bi-check-circle-fill"></i>
+        @toastMessage
+    </div>
+}
+
+
+@code {
+
+    private PagedResult<ProductDto>? products;
+
+    private string searchText = string.Empty;
+    private string sort = string.Empty;
+
+    private string errorMessage = string.Empty;
+    private string toastMessage = string.Empty;
+
+    private bool loading;
+
+    private int page = 1;
+    private const int PageSize = 8;
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadProductsAsync();
+    }
+
+
+    private async Task LoadProductsAsync()
+    {
+        if (loading)
+            return;
+
+        loading = true;
+        errorMessage = string.Empty;
+
+        try
+        {
+            var url =
+                $"api/products?page={page}&pageSize={PageSize}";
+
+            if (!string.IsNullOrWhiteSpace(searchText))
+            {
+                url += $"&search={Uri.EscapeDataString(searchText.Trim())}";
+            }
+
+            var response =
+                await ApiService.GetAsync<
+                    ApiResponse<PagedResult<ProductDto>>>(url);
+
+            if (response == null)
+            {
+                errorMessage = "API không trả về dữ liệu.";
+                return;
+            }
+
+            if (!response.Success)
+            {
+                errorMessage = response.Message;
+                return;
+            }
+
+            products = response.Data;
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+        finally
+        {
+            loading = false;
+        }
+    }
+
+
+    private async Task HandleSearchKeyDown(
+        KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            page = 1;
+            await LoadProductsAsync();
+        }
+    }
+
+
+    private async Task GoToPage(int pageNumber)
+    {
+        page = pageNumber;
+        await LoadProductsAsync();
+
+        await ScrollToTop();
+    }
+
+
+    private async Task PreviousPage()
+    {
+        if (page <= 1)
+            return;
+
+        page--;
+        await LoadProductsAsync();
+    }
+
+
+    private async Task NextPage()
+    {
+        if (products == null ||
+            page >= products.TotalPages)
+            return;
+
+        page++;
+        await LoadProductsAsync();
+    }
+
+
+    private void OpenProduct(int productId)
+    {
+        Navigation.NavigateTo($"/products/{productId}");
+    }
+
+
+    private async Task AddToCartAsync(ProductDto product)
+    {
+        // Sẽ nối API Cart ở bước tiếp theo.
+        toastMessage = $"{product.Name} đã được thêm vào giỏ.";
+
+        await Task.Delay(2500);
+
+        toastMessage = string.Empty;
+    }
+
+
+    private async Task ScrollToTop()
+    {
+        // Để trống ở giai đoạn đầu.
+        await Task.CompletedTask;
+    }
+
+
+    private void HandleImageError(
+        Microsoft.AspNetCore.Components.Web.ErrorEventArgs args)
+    {
+        // Image lỗi sẽ được xử lý bằng CSS/placeholder ở bước tiếp theo.
+    }
+}

@@ -1,0 +1,134 @@
+@page "/login"
+
+@using HealthPlus.Client.Models.Auth
+@using HealthPlus.Client.Services
+@using Microsoft.AspNetCore.Components.Authorization
+@using System.Security.Claims
+
+@inject AuthService AuthService
+
+<h3>Login</h3>
+
+<div class="mb-3">
+    <label for="email" class="form-label">Email</label>
+    <input id="email"
+           type="email"
+           class="form-control"
+           @bind="model.Email" />
+</div>
+
+<div class="mb-3">
+    <label for="password" class="form-label">Password</label>
+    <input id="password"
+           type="password"
+           class="form-control"
+           @bind="model.Password" />
+</div>
+
+<button class="btn btn-primary"
+        @onclick="LoginAsync"
+        disabled="@loading">
+
+    @(loading ? "Logging in..." : "Login")
+</button>
+
+@if (!string.IsNullOrWhiteSpace(message))
+{
+    <div class="alert @(success ? "alert-success" : "alert-danger") mt-3">
+        @message
+    </div>
+}
+
+<AuthorizeView>
+    <Authorized>
+        <div class="alert alert-success mt-3">
+            <p>
+                <strong>Authenticated</strong>
+            </p>
+
+            <p>
+                <strong>User:</strong>
+                @context.User.Identity?.Name
+            </p>
+
+            <p>
+                <strong>Role:</strong>
+                @context.User.FindFirst(ClaimTypes.Role)?.Value
+            </p>
+
+            <button class="btn btn-danger"
+                    @onclick="LogoutAsync">
+                Logout
+            </button>
+        </div>
+    </Authorized>
+
+    <NotAuthorized>
+        <div class="alert alert-secondary mt-3">
+            Not authenticated
+        </div>
+    </NotAuthorized>
+</AuthorizeView>
+
+@if (AuthService.CurrentUser != null)
+{
+    <div class="mt-3">
+        <p>
+            <strong>Full name:</strong>
+            @AuthService.CurrentUser.FullName
+        </p>
+
+        <p>
+            <strong>Email:</strong>
+            @AuthService.CurrentUser.Email
+        </p>
+
+        <p>
+            <strong>Role:</strong>
+            @AuthService.CurrentUser.Role
+        </p>
+    </div>
+}
+
+@code {
+    private LoginRequest model = new();
+
+    private bool loading;
+    private bool success;
+    private string message = string.Empty;
+
+    private async Task LoginAsync()
+    {
+        if (loading)
+            return;
+
+        loading = true;
+        message = string.Empty;
+
+        try
+        {
+            var result =
+                await AuthService.LoginAsync(model);
+
+            success = result.Success;
+            message = result.Message;
+        }
+        catch (Exception ex)
+        {
+            success = false;
+            message = ex.Message;
+        }
+        finally
+        {
+            loading = false;
+        }
+    }
+
+    private async Task LogoutAsync()
+    {
+        await AuthService.LogoutAsync();
+
+        success = true;
+        message = "Logged out successfully.";
+    }
+}

@@ -1,0 +1,120 @@
+@page "/cart-test"
+
+@using HealthPlus.Client.Models.Common
+@using HealthPlus.Client.Services
+
+@inject ApiService ApiService
+
+<h3>Cart Test</h3>
+
+<button class="btn btn-primary"
+        @onclick="LoadCartAsync"
+        disabled="@loading">
+    @(loading ? "Loading..." : "Load Cart")
+</button>
+
+@if (!string.IsNullOrWhiteSpace(message))
+{
+    <div class="alert alert-info mt-3">
+        @message
+    </div>
+}
+
+@if (cart != null)
+{
+    <div class="mt-3">
+        <h5>
+            Total:
+            @cart.TotalAmount.ToString("N0")
+        </h5>
+
+        @if (cart.Items.Count == 0)
+        {
+            <p>Cart is empty.</p>
+        }
+        else
+        {
+            <ul>
+                @foreach (var item in cart.Items)
+                {
+                    <li>
+                        @item.ProductName -
+                        @item.Quantity x
+                        @item.Price.ToString("N0")
+                    </li>
+                }
+            </ul>
+        }
+    </div>
+}
+
+@code {
+
+    private CartDto? cart;
+
+    private bool loading;
+
+    private string message = string.Empty;
+
+    private async Task LoadCartAsync()
+    {
+        if (loading)
+            return;
+
+        loading = true;
+        message = string.Empty;
+
+        try
+        {
+            var response =
+                await ApiService.GetAsync<ApiResponse<CartDto>>(
+                    "api/cart");
+
+            if (response == null)
+            {
+                message = "API returned no response.";
+                return;
+            }
+
+            if (!response.Success)
+            {
+                message = response.Message;
+                return;
+            }
+
+            cart = response.Data;
+
+            message = "Cart loaded successfully.";
+        }
+        catch (HttpRequestException ex)
+        {
+            message = $"Request failed: {ex.Message}";
+        }
+        catch (Exception ex)
+        {
+            message = ex.Message;
+        }
+        finally
+        {
+            loading = false;
+        }
+    }
+
+    public class CartDto
+    {
+        public List<CartItemDto> Items { get; set; } = [];
+        public decimal TotalAmount { get; set; }
+    }
+
+    public class CartItemDto
+    {
+        public int ProductId { get; set; }
+        public string ProductName { get; set; } = string.Empty;
+        public decimal Price { get; set; }
+        public int Quantity { get; set; }
+        public string? ImageUrl { get; set; }
+
+        public decimal Subtotal =>
+            Price * Quantity;
+    }
+}
