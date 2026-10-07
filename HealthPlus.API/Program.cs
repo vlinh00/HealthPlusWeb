@@ -82,6 +82,8 @@ builder.Services.AddScoped<IOrderRepository, OrderRepository>();
 
 builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
 
+builder.Services.AddScoped<IReportRepository, ReportRepository>();
+
 
 // =========================
 // Services
@@ -98,6 +100,9 @@ builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<IPaymentService, PaymentService>();
 
 builder.Services.AddScoped<IUserService, UserService>();
+
+builder.Services.AddScoped<IReportService, ReportService>();
+
 // =========================
 // Swagger
 // =========================
