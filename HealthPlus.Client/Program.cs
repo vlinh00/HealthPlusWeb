@@ -19,6 +19,7 @@ builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(apiBaseU
 
 builder.Services.AddScoped<ApiService>();
 builder.Services.AddScoped<AuthService>();
+builder.Services.AddScoped<CartService>();
 
 builder.Services.AddScoped<
     CustomAuthenticationStateProvider>();

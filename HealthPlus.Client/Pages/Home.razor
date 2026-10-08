@@ -1,7 +1,490 @@
 ﻿@page "/"
 
-<PageTitle>Home</PageTitle>
+@using HealthPlus.Client.Models.Common
+@using HealthPlus.Client.Models.Product
+@using HealthPlus.Client.Services
 
-<h1>Hello, world!</h1>
+@inject ApiService ApiService
+@inject NavigationManager Navigation
 
-Welcome to your new app.
+<PageTitle>HealthPlus - Chăm sóc sức khỏe mỗi ngày</PageTitle>
+
+<div class="home-page">
+
+    <!-- =========================
+         HERO
+         ========================= -->
+
+    <section class="home-hero">
+        <div class="container">
+
+            <div class="home-hero-content">
+
+                <div class="home-hero-text">
+
+                    <span class="home-label">
+                        <i class="bi bi-heart-pulse-fill"></i>
+                        HEALTHPLUS
+                    </span>
+
+                    <h1>
+                        Chăm sóc sức khỏe
+                        <span>theo cách tốt hơn.</span>
+                    </h1>
+
+                    <p>
+                        Khám phá các sản phẩm chăm sóc sức khỏe
+                        chất lượng, tiện lợi và phù hợp cho cuộc sống
+                        khỏe mạnh mỗi ngày.
+                    </p>
+
+                    <div class="home-hero-actions">
+
+                        <button class="home-primary-button"
+                                @onclick="GoToProducts">
+
+                            Khám phá sản phẩm
+
+                            <i class="bi bi-arrow-right"></i>
+
+                        </button>
+
+                        <button class="home-secondary-button"
+                                @onclick="ScrollToFeatured">
+
+                            Sản phẩm nổi bật
+
+                        </button>
+
+                    </div>
+
+                    <div class="home-trust">
+
+                        <div class="trust-item">
+                            <i class="bi bi-shield-check"></i>
+
+                            <div>
+                                <strong>Sản phẩm tin cậy</strong>
+                                <span>Lựa chọn kỹ càng</span>
+                            </div>
+                        </div>
+
+                        <div class="trust-item">
+                            <i class="bi bi-truck"></i>
+
+                            <div>
+                                <strong>Giao hàng tiện lợi</strong>
+                                <span>Đặt hàng nhanh chóng</span>
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="home-hero-visual">
+
+                    <div class="hero-circle circle-one"></div>
+                    <div class="hero-circle circle-two"></div>
+
+                    <div class="hero-product-card">
+
+                        <div class="hero-product-icon">
+                            <i class="bi bi-capsule"></i>
+                        </div>
+
+                        <span>HealthPlus</span>
+
+                        <strong>
+                            Sống khỏe mỗi ngày
+                        </strong>
+
+                        <small>
+                            Chăm sóc bạn và gia đình
+                        </small>
+
+                    </div>
+
+                    <div class="floating-card floating-card-one">
+                        <i class="bi bi-check-circle-fill"></i>
+
+                        <div>
+                            <strong>Chất lượng</strong>
+                            <span>Được lựa chọn</span>
+                        </div>
+                    </div>
+
+                    <div class="floating-card floating-card-two">
+                        <i class="bi bi-heart-fill"></i>
+
+                        <div>
+                            <strong>Health First</strong>
+                            <span>Ưu tiên sức khỏe</span>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+    </section>
+
+
+    <!-- =========================
+         BENEFITS
+         ========================= -->
+
+    <section class="home-benefits">
+
+        <div class="container">
+
+            <div class="benefits-grid">
+
+                <div class="benefit-card">
+                    <div class="benefit-icon">
+                        <i class="bi bi-patch-check"></i>
+                    </div>
+
+                    <div>
+                        <strong>Sản phẩm chất lượng</strong>
+
+                        <p>
+                            Các sản phẩm được lựa chọn
+                            phù hợp với nhu cầu chăm sóc sức khỏe.
+                        </p>
+                    </div>
+                </div>
+
+
+                <div class="benefit-card">
+                    <div class="benefit-icon">
+                        <i class="bi bi-cart-check"></i>
+                    </div>
+
+                    <div>
+                        <strong>Mua sắm đơn giản</strong>
+
+                        <p>
+                            Tìm kiếm, thêm vào giỏ và đặt hàng
+                            nhanh chóng ngay trên website.
+                        </p>
+                    </div>
+                </div>
+
+
+                <div class="benefit-card">
+                    <div class="benefit-icon">
+                        <i class="bi bi-headset"></i>
+                    </div>
+
+                    <div>
+                        <strong>Hỗ trợ tận tâm</strong>
+
+                        <p>
+                            Luôn hướng đến trải nghiệm mua sắm
+                            rõ ràng và thuận tiện.
+                        </p>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- =========================
+         FEATURED PRODUCTS
+         ========================= -->
+
+    <section class="home-products"
+             id="featured-products">
+
+        <div class="container">
+
+            <div class="section-heading">
+
+                <div>
+                    <span class="section-label">
+                        GỢI Ý CHO BẠN
+                    </span>
+
+                    <h2>
+                        Sản phẩm nổi bật
+                    </h2>
+
+                    <p>
+                        Một số sản phẩm được yêu thích tại HealthPlus.
+                    </p>
+                </div>
+
+                <button class="view-all-button"
+                        @onclick="GoToProducts">
+
+                    Xem tất cả
+
+                    <i class="bi bi-arrow-right"></i>
+
+                </button>
+
+            </div>
+
+
+            @if (loading)
+            {
+                <div class="home-product-grid">
+
+                    @for (var i = 0; i < 4; i++)
+                    {
+                        <div class="home-product-skeleton">
+
+                            <div class="skeleton skeleton-home-image"></div>
+
+                            <div class="skeleton skeleton-home-line"></div>
+
+                            <div class="skeleton skeleton-home-line short"></div>
+
+                            <div class="skeleton skeleton-home-price"></div>
+
+                        </div>
+                    }
+
+                </div>
+            }
+            else if (!string.IsNullOrWhiteSpace(errorMessage))
+            {
+                <div class="home-products-error">
+
+                    <i class="bi bi-exclamation-circle"></i>
+
+                    <span>
+                        Không thể tải sản phẩm.
+                    </span>
+
+                    <button @onclick="LoadFeaturedProductsAsync">
+                        Thử lại
+                    </button>
+
+                </div>
+            }
+            else if (products.Count == 0)
+            {
+                <div class="home-products-empty">
+
+                    <i class="bi bi-box-seam"></i>
+
+                    <p>
+                        Hiện chưa có sản phẩm nổi bật.
+                    </p>
+
+                </div>
+            }
+            else
+            {
+                <div class="home-product-grid">
+
+                    @foreach (var product in products)
+                    {
+                        <article class="home-product-card">
+
+                            <div class="home-product-image">
+
+                                @if (!string.IsNullOrWhiteSpace(product.ImageUrl))
+                                {
+                                    <img src="@product.ImageUrl"
+                                         alt="@product.Name" />
+                                }
+                                else
+                                {
+                                    <div class="home-product-placeholder">
+                                        <i class="bi bi-capsule"></i>
+                                    </div>
+                                }
+
+                            </div>
+
+                            <div class="home-product-content">
+
+                                <span class="home-product-category">
+                                    @product.CategoryName
+                                </span>
+
+                                <button class="home-product-name"
+                                        @onclick="() => OpenProduct(product.Id)">
+
+                                    @product.Name
+
+                                </button>
+
+                                <div class="home-product-bottom">
+
+                                    <strong>
+                                        @product.Price.ToString("N0")đ
+                                    </strong>
+
+                                    <button class="home-product-detail"
+                                            @onclick="() => OpenProduct(product.Id)">
+
+                                        <i class="bi bi-arrow-up-right"></i>
+
+                                    </button>
+
+                                </div>
+
+                            </div>
+
+                        </article>
+                    }
+
+                </div>
+            }
+
+        </div>
+
+    </section>
+
+
+    <!-- =========================
+         CTA
+         ========================= -->
+
+    <section class="home-cta">
+
+        <div class="container">
+
+            <div class="home-cta-inner">
+
+                <div>
+
+                    <span>
+                        HEALTHPLUS
+                    </span>
+
+                    <h2>
+                        Bắt đầu hành trình
+                        sống khỏe hôm nay.
+                    </h2>
+
+                    <p>
+                        Tìm sản phẩm phù hợp với nhu cầu
+                        chăm sóc sức khỏe của bạn.
+                    </p>
+
+                </div>
+
+                <button @onclick="GoToProducts">
+
+                    Mua sắm ngay
+
+                    <i class="bi bi-arrow-right"></i>
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </section>
+
+</div>
+
+
+@code {
+
+    private List<ProductDto> products = [];
+
+    private bool loading;
+
+    private string errorMessage = string.Empty;
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadFeaturedProductsAsync();
+    }
+
+
+    private async Task LoadFeaturedProductsAsync()
+    {
+        loading = true;
+        errorMessage = string.Empty;
+
+        try
+        {
+            var response =
+                await ApiService.GetAsync<
+                    ApiResponse<PagedResult<ProductDto>>>(
+                        "api/products?page=1&pageSize=4");
+
+
+            if (response == null)
+            {
+                errorMessage =
+                    "API không trả về dữ liệu.";
+
+                return;
+            }
+
+
+            if (!response.Success)
+            {
+                errorMessage =
+                    response.Message;
+
+                return;
+            }
+
+
+            products =
+                response.Data?.Items ?? [];
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+        finally
+        {
+            loading = false;
+        }
+    }
+
+
+    private void GoToProducts()
+    {
+        Navigation.NavigateTo("/products");
+    }
+
+
+    private void OpenProduct(int productId)
+    {
+        Navigation.NavigateTo(
+            $"/products/{productId}");
+    }
+
+
+    private async Task ScrollToFeatured()
+    {
+        await Task.CompletedTask;
+
+        await JSScrollToFeatured();
+    }
+
+
+    [Inject]
+    private IJSRuntime JS { get; set; } = default!;
+
+
+    private async Task JSScrollToFeatured()
+    {
+        await JS.InvokeVoidAsync(
+            "eval",
+            """
+            document.getElementById('featured-products')
+                ?.scrollIntoView({ behavior: 'smooth' });
+            """);
+    }
+
+}

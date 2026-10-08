@@ -1,0 +1,502 @@
+@page "/cart"
+
+@using HealthPlus.Client.Models.Cart
+@using HealthPlus.Client.Services
+
+@inject CartService CartService
+@inject AuthService AuthService
+@inject NavigationManager Navigation
+
+<PageTitle>Giỏ hàng | HealthPlus</PageTitle>
+
+<div class="cart-page">
+
+    <div class="cart-container">
+
+        <!-- HEADER -->
+        <div class="cart-header">
+
+            <div>
+                <span class="cart-eyebrow">
+                    HEALTHPLUS
+                </span>
+
+                <h1>
+                    Giỏ hàng
+                </h1>
+
+                @if (cart != null && cart.Items.Count > 0)
+                {
+                    <p>
+                        Bạn đang có
+                        <strong>@cart.Items.Count sản phẩm</strong>
+                        trong giỏ hàng.
+                    </p>
+                }
+                else
+                {
+                    <p>
+                        Kiểm tra sản phẩm trước khi tiến hành đặt hàng.
+                    </p>
+                }
+            </div>
+
+            <button class="continue-shopping" @onclick="GoToProducts">
+
+                <i class="bi bi-arrow-left"></i>
+
+                <span>
+                    Tiếp tục mua sắm
+                </span>
+
+            </button>
+
+        </div>
+
+
+        <!-- NOT LOGIN -->
+        @if (!AuthService.IsAuthenticated)
+        {
+            <div class="cart-state-card">
+
+                <div class="state-icon">
+                    <i class="bi bi-person-lock"></i>
+                </div>
+
+                <h2>
+                    Vui lòng đăng nhập
+                </h2>
+
+                <p>
+                    Bạn cần đăng nhập để xem và quản lý giỏ hàng của mình.
+                </p>
+
+                <button class="primary-button" @onclick="GoToLogin">
+
+                    <i class="bi bi-box-arrow-in-right"></i>
+
+                    Đăng nhập
+
+                </button>
+
+            </div>
+        }
+        else if (loading)
+        {
+            <div class="cart-state-card">
+
+                <div class="loading-spinner"></div>
+
+                <h2>
+                    Đang tải giỏ hàng...
+                </h2>
+
+                <p>
+                    Vui lòng chờ trong giây lát.
+                </p>
+
+            </div>
+        }
+        else if (!string.IsNullOrWhiteSpace(errorMessage))
+        {
+            <div class="cart-state-card">
+
+                <div class="state-icon error">
+                    <i class="bi bi-exclamation-triangle"></i>
+                </div>
+
+                <h2>
+                    Không thể tải giỏ hàng
+                </h2>
+
+                <p>
+                    @errorMessage
+                </p>
+
+                <button class="primary-button" @onclick="LoadCartAsync">
+
+                    <i class="bi bi-arrow-clockwise"></i>
+
+                    Thử lại
+
+                </button>
+
+            </div>
+        }
+        else if (cart == null || cart.Items.Count == 0)
+        {
+            <div class="cart-state-card empty">
+
+                <div class="state-icon">
+                    <i class="bi bi-cart3"></i>
+                </div>
+
+                <h2>
+                    Giỏ hàng đang trống
+                </h2>
+
+                <p>
+                    Bạn chưa có sản phẩm nào trong giỏ hàng.
+                    Hãy khám phá các sản phẩm chăm sóc sức khỏe của HealthPlus.
+                </p>
+
+                <button class="primary-button" @onclick="GoToProducts">
+
+                    <i class="bi bi-shop"></i>
+
+                    Khám phá sản phẩm
+
+                </button>
+
+            </div>
+        }
+        else
+        {
+            <div class="cart-layout">
+
+                <div class="cart-items-card">
+
+                    <div class="cart-items-header">
+                        <div>
+                            <h2>Sản phẩm</h2>
+
+                            <span>
+                                @cart.Items.Count sản phẩm
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="cart-items">
+
+                        @foreach (var item in cart.Items)
+                        {
+                            <div class="cart-item">
+
+                                <div class="cart-item-image">
+                                    @if (!string.IsNullOrWhiteSpace(item.ImageUrl))
+                                    {
+                                        <img src="@item.ImageUrl" alt="@item.ProductName" />
+                                    }
+                                    else
+                                    {
+                                        <div class="image-placeholder">
+                                            <i class="bi bi-capsule"></i>
+                                        </div>
+                                    }
+                                </div>
+
+                                <div class="cart-item-info">
+
+                                    <h3>
+                                        @item.ProductName
+                                    </h3>
+
+                                    <div class="cart-item-price">
+                                        @item.Price.ToString("N0")₫
+                                    </div>
+
+                                </div>
+
+                                <div class="quantity-control">
+
+                                    <button class="quantity-button" disabled="@updating"
+                                            @onclick="() => DecreaseQuantityAsync(item)">
+                                        <i class="bi bi-dash"></i>
+                                    </button>
+
+                                    <span class="quantity-value">
+                                        @item.Quantity
+                                    </span>
+
+                                    <button class="quantity-button" disabled="@updating"
+                                            @onclick="() => IncreaseQuantityAsync(item)">
+                                        <i class="bi bi-plus"></i>
+                                    </button>
+
+                                </div>
+
+                                <div class="cart-item-subtotal">
+
+                                    <span>
+                                        Thành tiền
+                                    </span>
+
+                                    <strong>
+                                        @item.Subtotal.ToString("N0")₫
+                                    </strong>
+
+                                </div>
+
+                                <button class="remove-button" title="Xóa sản phẩm" disabled="@updating"
+                                        @onclick="() => RemoveItemAsync(item)">
+
+                                    <i class="bi bi-trash3"></i>
+
+                                </button>
+
+                            </div>
+                        }
+
+                    </div>
+
+                </div>
+
+                <aside class="cart-summary">
+
+                    <div class="summary-header">
+
+                        <h2>
+                            Tổng đơn hàng
+                        </h2>
+
+                        <i class="bi bi-receipt"></i>
+
+                    </div>
+
+                    <div class="summary-row">
+
+                        <span>
+                            Tạm tính
+                        </span>
+
+                        <strong>
+                            @cart.TotalAmount.ToString("N0")₫
+                        </strong>
+
+                    </div>
+
+                    <div class="summary-row">
+
+                        <span>
+                            Phí vận chuyển
+                        </span>
+
+                        <strong class="free-shipping">
+                            Miễn phí
+                        </strong>
+
+                    </div>
+
+                    <div class="summary-divider"></div>
+
+                    <div class="summary-total">
+
+                        <span>
+                            Tổng cộng
+                        </span>
+
+                        <strong>
+                            @cart.TotalAmount.ToString("N0")₫
+                        </strong>
+
+                    </div>
+
+                    <button class="checkout-button" disabled="@updating" @onclick="CheckoutAsync">
+
+                        <span>
+                            Tiến hành đặt hàng
+                        </span>
+
+                        <i class="bi bi-arrow-right"></i>
+
+                    </button>
+
+                    <div class="secure-payment">
+
+                        <i class="bi bi-shield-check"></i>
+
+                        <span>
+                            Thanh toán an toàn và bảo mật
+                        </span>
+
+                    </div>
+
+                </aside>
+
+            </div>
+        }
+
+    </div>
+
+</div>
+
+
+@if (!string.IsNullOrWhiteSpace(toastMessage))
+{
+    <div class="cart-toast">
+
+        <i class="bi bi-check-circle-fill"></i>
+
+        <span>
+            @toastMessage
+        </span>
+
+    </div>
+}
+
+
+@code {
+
+    private CartDto? cart;
+
+    private bool loading;
+
+    private bool updating;
+
+    private string errorMessage = string.Empty;
+
+    private string toastMessage = string.Empty;
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!AuthService.IsAuthenticated)
+            return;
+
+        await LoadCartAsync();
+    }
+
+
+    private async Task LoadCartAsync()
+    {
+        loading = true;
+        errorMessage = string.Empty;
+
+        try
+        {
+            cart = await CartService.LoadAsync();
+        }
+        catch (Exception ex)
+        {
+            errorMessage =
+                string.IsNullOrWhiteSpace(ex.Message)
+                    ? "Không thể tải giỏ hàng."
+                    : ex.Message;
+        }
+        finally
+        {
+            loading = false;
+        }
+    }
+
+
+    private async Task IncreaseQuantityAsync(
+        CartItemDto item)
+    {
+        await UpdateQuantityAsync(
+            item,
+            item.Quantity + 1);
+    }
+
+
+    private async Task DecreaseQuantityAsync(
+        CartItemDto item)
+    {
+        if (item.Quantity <= 1)
+            return;
+
+        await UpdateQuantityAsync(
+            item,
+            item.Quantity - 1);
+    }
+
+
+    private async Task UpdateQuantityAsync(
+        CartItemDto item,
+        int quantity)
+    {
+        if (updating)
+            return;
+
+        updating = true;
+
+        try
+        {
+            await CartService.UpdateAsync(
+                item.ProductId,
+                quantity);
+
+            cart = CartService.CurrentCart;
+        }
+        catch (Exception ex)
+        {
+            ShowToast(
+                string.IsNullOrWhiteSpace(ex.Message)
+                    ? "Không thể cập nhật giỏ hàng."
+                    : ex.Message);
+        }
+        finally
+        {
+            updating = false;
+        }
+    }
+
+
+    private async Task RemoveItemAsync(
+        CartItemDto item)
+    {
+        if (updating)
+            return;
+
+        updating = true;
+
+        try
+        {
+            await CartService.RemoveAsync(
+                item.ProductId);
+
+            cart = CartService.CurrentCart;
+
+            ShowToast("Đã xóa sản phẩm khỏi giỏ hàng.");
+        }
+        catch (Exception ex)
+        {
+            ShowToast(
+                string.IsNullOrWhiteSpace(ex.Message)
+                    ? "Không thể xóa sản phẩm."
+                    : ex.Message);
+        }
+        finally
+        {
+            updating = false;
+        }
+    }
+
+
+    private void GoToProducts()
+    {
+        Navigation.NavigateTo("/products");
+    }
+
+
+    private void GoToLogin()
+    {
+        Navigation.NavigateTo("/login");
+    }
+
+
+    private void CheckoutAsync()
+    {
+        Navigation.NavigateTo("/checkout");
+    }
+
+
+    private void ShowToast(string message)
+    {
+        toastMessage = message;
+
+        _ = HideToastAsync();
+    }
+
+
+    private async Task HideToastAsync()
+    {
+        await Task.Delay(2500);
+
+        toastMessage = string.Empty;
+
+        await InvokeAsync(
+            StateHasChanged);
+    }
+
+}

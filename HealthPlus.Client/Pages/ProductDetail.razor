@@ -1,0 +1,346 @@
+@page "/products/{Id:int}"
+
+@using HealthPlus.Client.Models.Common
+@using HealthPlus.Client.Models.Product
+@using HealthPlus.Client.Services
+
+@inject ApiService ApiService
+@inject CartService CartService
+@inject AuthService AuthService
+@inject NavigationManager Navigation
+
+<PageTitle>
+    @(product?.Name ?? "Sản phẩm") | HealthPlus
+</PageTitle>
+
+<div class="product-detail-page">
+
+    <div class="container">
+
+        @if (loading)
+        {
+            <div class="detail-loading">
+
+                <div class="detail-spinner"></div>
+
+                <p>
+                    Đang tải sản phẩm...
+                </p>
+
+            </div>
+        }
+
+        else if (!string.IsNullOrWhiteSpace(errorMessage))
+        {
+            <div class="detail-state">
+
+                <div class="detail-state-icon error">
+                    <i class="bi bi-exclamation-triangle"></i>
+                </div>
+
+                <h2>
+                    Không thể tải sản phẩm
+                </h2>
+
+                <p>
+                    @errorMessage
+                </p>
+
+                <button class="detail-button"
+                        @onclick="GoBack">
+
+                    <i class="bi bi-arrow-left"></i>
+
+                    Quay lại cửa hàng
+
+                </button>
+
+            </div>
+        }
+
+        else if (product != null)
+        {
+            <div class="product-detail">
+
+                <!-- BACK -->
+
+                <button type="button"
+                        class="back-button"
+                        @onclick="GoBack">
+
+                    <i class="bi bi-arrow-left"></i>
+
+                    Quay lại cửa hàng
+
+                </button>
+
+
+                <!-- PRODUCT -->
+
+                <div class="product-detail-card">
+
+                    <!-- IMAGE -->
+
+                    <div class="detail-image">
+
+                        @if (!string.IsNullOrWhiteSpace(product.ImageUrl))
+                        {
+                            <img src="@product.ImageUrl"
+                                 alt="@product.Name" />
+                        }
+                        else
+                        {
+                            <div class="detail-placeholder">
+                                <i class="bi bi-capsule"></i>
+                            </div>
+                        }
+
+                    </div>
+
+
+                    <!-- INFO -->
+
+                    <div class="detail-info">
+
+                        <span class="detail-category">
+                            @product.CategoryName
+                        </span>
+
+
+                        <h1>
+                            @product.Name
+                        </h1>
+
+
+                        <div class="detail-price">
+                            @product.Price.ToString("N0")đ
+                        </div>
+
+
+                        <div class="detail-stock">
+
+                            @if (product.Stock > 0)
+                            {
+                                <i class="bi bi-check-circle-fill"></i>
+
+                                <span>
+                                    Còn @product.Stock sản phẩm
+                                </span>
+                            }
+                            else
+                            {
+                                <i class="bi bi-x-circle-fill"></i>
+
+                                <span>
+                                    Hết hàng
+                                </span>
+                            }
+
+                        </div>
+
+
+                        <div class="detail-divider"></div>
+
+
+                        <div class="detail-description">
+
+                            <h2>
+                                Mô tả sản phẩm
+                            </h2>
+
+                            @if (string.IsNullOrWhiteSpace(product.Description))
+                            {
+                                <p class="muted">
+                                    Chưa có mô tả cho sản phẩm này.
+                                </p>
+                            }
+                            else
+                            {
+                                <p>
+                                    @product.Description
+                                </p>
+                            }
+
+                        </div>
+
+
+                        <div class="detail-actions">
+
+                            <button type="button"
+                                    class="detail-add-button"
+                                    disabled="@(product.Stock <= 0)"
+                                    @onclick="AddToCartAsync">
+
+                                <i class="bi bi-cart-plus"></i>
+
+                                @(product.Stock > 0
+                                    ? "Thêm vào giỏ"
+                                    : "Hết hàng")
+
+                            </button>
+
+
+                            <button type="button"
+                                    class="detail-cart-button"
+                                    @onclick="GoToCart">
+
+                                Xem giỏ hàng
+
+                                <i class="bi bi-arrow-right"></i>
+
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+        }
+
+    </div>
+
+</div>
+
+
+@if (!string.IsNullOrWhiteSpace(toastMessage))
+{
+    <div class="detail-toast">
+
+        <i class="bi bi-check-circle-fill"></i>
+
+        @toastMessage
+
+    </div>
+}
+
+
+@code {
+
+    [Parameter]
+    public int Id { get; set; }
+
+
+    private ProductDto? product;
+
+    private bool loading;
+
+    private string errorMessage = string.Empty;
+
+    private string toastMessage = string.Empty;
+
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await LoadProductAsync();
+    }
+
+
+    private async Task LoadProductAsync()
+    {
+        loading = true;
+
+        errorMessage = string.Empty;
+
+        product = null;
+
+        try
+        {
+            var response =
+                await ApiService.GetAsync<
+                    ApiResponse<ProductDto>>(
+                        $"api/products/{Id}");
+
+            if (response == null)
+            {
+                errorMessage =
+                    "API không trả về dữ liệu.";
+
+                return;
+            }
+
+            if (!response.Success)
+            {
+                errorMessage =
+                    response.Message;
+
+                return;
+            }
+
+            product =
+                response.Data;
+        }
+        catch (Exception ex)
+        {
+            errorMessage =
+                string.IsNullOrWhiteSpace(ex.Message)
+                    ? "Không thể tải sản phẩm."
+                    : ex.Message;
+        }
+        finally
+        {
+            loading = false;
+        }
+    }
+
+
+    private async Task AddToCartAsync()
+    {
+        if (product == null)
+            return;
+
+        if (!AuthService.IsAuthenticated)
+        {
+            Navigation.NavigateTo("/login");
+            return;
+        }
+
+        if (product.Stock <= 0)
+            return;
+
+        try
+        {
+            await CartService.AddAsync(product.Id);
+
+            toastMessage =
+                $"{product.Name} đã được thêm vào giỏ.";
+
+            StateHasChanged();
+
+            await Task.Delay(2200);
+
+            toastMessage = string.Empty;
+
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            toastMessage =
+                string.IsNullOrWhiteSpace(ex.Message)
+                    ? "Không thể thêm vào giỏ."
+                    : ex.Message;
+
+            StateHasChanged();
+
+            await Task.Delay(3000);
+
+            toastMessage = string.Empty;
+
+            StateHasChanged();
+        }
+    }
+
+
+    private void GoToCart()
+    {
+        Navigation.NavigateTo("/cart");
+    }
+
+
+    private void GoBack()
+    {
+        Navigation.NavigateTo("/products");
+    }
+
+}
