@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("HealthPlus.Client")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+394fed65646279565d91823dd9680163249ae02b")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+fa9f15e68b6dd06e355fd6e56efa60e08fa53f09")]
 [assembly: System.Reflection.AssemblyProductAttribute("HealthPlus.Client")]
 [assembly: System.Reflection.AssemblyTitleAttribute("HealthPlus.Client")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

@@ -309,9 +309,13 @@ public class OrderService : IOrderService
         {
             Id = order.Id,
 
+            OrderCode = order.OrderCode,
+
             OrderDate = order.OrderDate,
 
             Status = order.Status,
+            
+            PaymentStatus = order.PaymentStatus,
 
             TotalAmount = order.TotalAmount,
 
