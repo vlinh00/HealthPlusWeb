@@ -1,67 +1,191 @@
-﻿@* @inherits LayoutComponentBase
-<div class="page">
-    <div class="sidebar">
-        <NavMenu />
-    </div>
+﻿@inherits LayoutComponentBase
 
-    <main>
-        <div class="top-row px-4">
-            <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
-        </div>
+@using Microsoft.AspNetCore.Components.Authorization
+@using HealthPlus.Client.Services
 
-        <article class="content px-4">
-            @Body
-        </article>
-    </main>
-</div> *@
+@inject AuthService AuthService
+@inject NavigationManager Navigation
 
-@inherits LayoutComponentBase
+<div class="main-layout">
 
-<div class="app-shell">
+    <header class="main-header">
 
-    <header class="site-header">
-        <div class="container header-inner">
+        <div class="container main-header-inner">
 
-            <a href="/" class="brand">
-                <span class="brand-icon">
+            <!-- BRAND -->
+            <a href="/" class="main-brand">
+
+                <span class="main-brand-icon">
                     <i class="bi bi-heart-pulse-fill"></i>
                 </span>
 
-                <span>Health<span class="brand-plus">Plus</span></span>
+                <span>
+                    Health<span>Plus</span>
+                </span>
+
             </a>
 
+
+            <!-- NAV -->
             <nav class="main-nav">
+
                 <a href="/products" class="nav-link">
-                    Cửa hàng
+                    <i class="bi bi-shop"></i>
+                    <span>Cửa hàng</span>
                 </a>
+
 
                 <a href="/cart" class="nav-link cart-link">
-                    <i class="bi bi-bag"></i>
+
+                    <i class="bi bi-cart3"></i>
+
                     <span>Giỏ hàng</span>
-                    <span class="cart-badge">0</span>
+
                 </a>
 
-                <a href="/login" class="login-button">
-                    Đăng nhập
-                </a>
+
+                <AuthorizeView>
+
+                    <Authorized>
+
+                        <div class="user-menu">
+
+                            <div class="user-info">
+
+                                <div class="user-avatar">
+                                    <i class="bi bi-person-fill"></i>
+                                </div>
+
+                                <div class="user-text">
+
+                                    <strong>
+                                        @(AuthService.CurrentUser?.FullName
+                                            ?? "Tài khoản")
+                                    </strong>
+
+                                    <span>
+                                        @(AuthService.CurrentUser?.Role
+                                            ?? "Customer")
+                                    </span>
+
+                                </div>
+
+                            </div>
+
+
+                            <button type="button"
+                                    class="logout-button"
+                                    @onclick="LogoutAsync">
+
+                                <i class="bi bi-box-arrow-right"></i>
+
+                                <span>Đăng xuất</span>
+
+                            </button>
+
+                        </div>
+
+                    </Authorized>
+
+
+                    <NotAuthorized>
+
+                        <a href="/login" class="login-button">
+
+                            <i class="bi bi-person"></i>
+
+                            <span>Đăng nhập</span>
+
+                        </a>
+
+                    </NotAuthorized>
+
+                </AuthorizeView>
+
             </nav>
 
         </div>
+
     </header>
+
 
     <main>
         @Body
     </main>
 
-    <footer class="site-footer">
-        <div class="container footer-inner">
-            <div>
-                <strong>HealthPlus</strong>
-                <span>Chăm sóc sức khỏe mỗi ngày.</span>
+
+    <footer class="main-footer">
+
+        <div class="container">
+
+            <div class="footer-content">
+
+                <div class="footer-brand">
+
+                    <div class="footer-brand-name">
+
+                        <span class="footer-brand-icon">
+                            <i class="bi bi-heart-pulse-fill"></i>
+                        </span>
+
+                        <span>
+                            Health<span>Plus</span>
+                        </span>
+
+                    </div>
+
+                    <p>
+                        Chăm sóc sức khỏe theo cách tốt hơn.
+                    </p>
+
+                </div>
+
+
+                <div class="footer-links">
+
+                    <a href="/products">
+                        Cửa hàng
+                    </a>
+
+                    <a href="/cart">
+                        Giỏ hàng
+                    </a>
+
+                    <a href="/orders">
+                        Đơn hàng
+                    </a>
+
+                </div>
+
             </div>
 
-            <span>© 2026 HealthPlus</span>
+
+            <div class="footer-bottom">
+
+                <span>
+                    © @DateTime.Now.Year HealthPlus
+                </span>
+
+                <span>
+                    Sức khỏe của bạn, ưu tiên của chúng tôi.
+                </span>
+
+            </div>
+
         </div>
+
     </footer>
 
 </div>
+
+
+@code {
+
+    private async Task LogoutAsync()
+    {
+        await AuthService.LogoutAsync();
+
+        Navigation.NavigateTo("/");
+    }
+
+}
