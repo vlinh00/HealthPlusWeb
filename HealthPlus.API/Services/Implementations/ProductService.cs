@@ -18,6 +18,7 @@ public class ProductService : IProductService
     public async Task<PagedResult<ProductDto>> GetProductsAsync(
         string? search,
         int? categoryId,
+        string? sort,
         int page,
         int pageSize)
     {
@@ -33,6 +34,7 @@ public class ProductService : IProductService
         var result = await _productRepository.GetPagedAsync(
             search,
             categoryId,
+            sort,
             page,
             pageSize);
 

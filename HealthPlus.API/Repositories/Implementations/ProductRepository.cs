@@ -4,6 +4,7 @@ using HealthPlus.API.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace HealthPlus.API.Repositories.Implementations;
+
 public class ProductRepository : IProductRepository
 {
     private readonly HealthPlusDbContext _context;
@@ -16,12 +17,18 @@ public class ProductRepository : IProductRepository
     public async Task<(List<Product> Items, int TotalItems)> GetPagedAsync(
         string? search,
         int? categoryId,
+        string? sort,
         int page,
         int pageSize)
     {
-        var query = _context.Products.AsQueryable();
+        var query = _context.Products
+            .AsNoTracking()
+            .Include(x => x.Category)
+            .Where(x => x.IsActive)
+            .AsQueryable();
 
-        if (!string.IsNullOrEmpty(search))
+        // Search
+        if (!string.IsNullOrWhiteSpace(search))
         {
             search = search.Trim();
 
@@ -31,15 +38,40 @@ public class ProductRepository : IProductRepository
                  x.Description.Contains(search)));
         }
 
+        // Category
         if (categoryId.HasValue)
         {
-            query = query.Where(p => p.CategoryId == categoryId.Value);
+            query = query.Where(x =>
+                x.CategoryId == categoryId.Value);
         }
 
+        // Total before pagination
         var totalItems = await query.CountAsync();
 
+        // Sort
+        query = sort?.Trim().ToLowerInvariant() switch
+        {
+            "price_asc" =>
+                query
+                    .OrderBy(x => x.Price)
+                    .ThenBy(x => x.Id),
+
+            "price_desc" =>
+                query
+                    .OrderByDescending(x => x.Price)
+                    .ThenBy(x => x.Id),
+
+            "name_asc" =>
+                query
+                    .OrderBy(x => x.Name)
+                    .ThenBy(x => x.Id),
+
+            _ =>
+                query.OrderByDescending(x => x.Id)
+        };
+
+        // Pagination
         var items = await query
-            .OrderByDescending(x => x.Id)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync();
@@ -60,6 +92,7 @@ public class ProductRepository : IProductRepository
     {
         _context.Products.Add(product);
         await _context.SaveChangesAsync();
+
         return product;
     }
 

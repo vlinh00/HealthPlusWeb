@@ -8,6 +8,7 @@ public interface IProductRepository
     Task<(List<Product> Items, int TotalItems)> GetPagedAsync(
         string? search,
         int? categoryId,
+        string? sort,
         int page,
         int pageSize);
 
