@@ -1,0 +1,288 @@
+@page "/orders"
+
+@using HealthPlus.Client.Models.Common
+@using HealthPlus.Client.Models.Order
+@using HealthPlus.Client.Services
+
+@inject ApiService ApiService
+@inject AuthService AuthService
+@inject NavigationManager Navigation
+
+<PageTitle>Đơn hàng | HealthPlus</PageTitle>
+
+<div class="orders-page">
+    <div class="orders-container">
+
+        <div class="orders-header">
+            <div>
+                <span class="orders-eyebrow">HEALTHPLUS</span>
+
+                <h1>Đơn hàng của tôi</h1>
+
+                <p>
+                    Theo dõi các đơn hàng bạn đã đặt.
+                </p>
+            </div>
+
+            <button class="back-button"
+                    @onclick="GoToProducts">
+                <i class="bi bi-shop"></i>
+                Tiếp tục mua sắm
+            </button>
+        </div>
+
+        @if (!AuthService.IsAuthenticated)
+        {
+            <div class="orders-state">
+                <div class="state-icon">
+                    <i class="bi bi-person-lock"></i>
+                </div>
+
+                <h2>Vui lòng đăng nhập</h2>
+
+                <p>
+                    Bạn cần đăng nhập để xem đơn hàng.
+                </p>
+
+                <button class="primary-button"
+                        @onclick="GoToLogin">
+                    Đăng nhập
+                </button>
+            </div>
+        }
+        else if (loading)
+        {
+            <div class="orders-state">
+                <div class="loading-spinner"></div>
+
+                <h2>Đang tải đơn hàng...</h2>
+
+                <p>Vui lòng chờ trong giây lát.</p>
+            </div>
+        }
+        else if (!string.IsNullOrWhiteSpace(errorMessage))
+        {
+            <div class="orders-state">
+                <div class="state-icon error">
+                    <i class="bi bi-exclamation-triangle"></i>
+                </div>
+
+                <h2>Không thể tải đơn hàng</h2>
+
+                <p>@errorMessage</p>
+
+                <button class="primary-button"
+                        @onclick="LoadOrdersAsync">
+                    <i class="bi bi-arrow-clockwise"></i>
+                    Thử lại
+                </button>
+            </div>
+        }
+        else if (orders.Count == 0)
+        {
+            <div class="orders-state">
+                <div class="state-icon">
+                    <i class="bi bi-receipt"></i>
+                </div>
+
+                <h2>Chưa có đơn hàng</h2>
+
+                <p>
+                    Bạn chưa đặt đơn hàng nào.
+                </p>
+
+                <button class="primary-button"
+                        @onclick="GoToProducts">
+                    <i class="bi bi-shop"></i>
+                    Mua sắm ngay
+                </button>
+            </div>
+        }
+        else
+        {
+            <div class="orders-list">
+
+                @foreach (var order in orders)
+                {
+                    <div class="order-card">
+
+                        <div class="order-card-header">
+
+                            <div>
+                                <span class="order-label">
+                                    MÃ ĐƠN HÀNG
+                                </span>
+
+                                <strong class="order-code">
+                                    @order.OrderCode
+                                </strong>
+                            </div>
+
+                            <span class="order-status @GetStatusClass(order.Status)">
+                                @GetOrderStatusText(order.Status)
+                            </span>
+
+                        </div>
+
+                        <div class="order-card-body">
+
+                            <div class="order-info">
+                                <span>Ngày đặt</span>
+                                <strong>
+                                    @order.OrderDate.ToLocalTime().ToString("dd/MM/yyyy HH:mm")
+                                </strong>
+                            </div>
+
+                            <div class="order-info">
+                                <span>Thanh toán</span>
+                                <strong>
+                                    @GetPaymentStatusText(
+                                        order.PaymentStatus)
+                                </strong>
+                            </div>
+
+                            <div class="order-info">
+                                <span>Tổng tiền</span>
+                                <strong class="order-total">
+                                    @order.TotalAmount.ToString("N0")₫
+                                </strong>
+                            </div>
+
+                        </div>
+
+                        <div class="order-card-footer">
+
+                            <span>
+                                @order.Items.Count sản phẩm
+                            </span>
+
+                            <button class="detail-button"
+                                    @onclick="() => ViewOrder(order.Id)">
+                                Xem chi tiết
+                                <i class="bi bi-arrow-right"></i>
+                            </button>
+
+                        </div>
+
+                    </div>
+                }
+
+            </div>
+        }
+
+    </div>
+</div>
+
+@code {
+
+    private List<OrderDto> orders = [];
+
+    private bool loading;
+    private string errorMessage = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!AuthService.IsAuthenticated)
+            return;
+
+        await LoadOrdersAsync();
+    }
+
+    private async Task LoadOrdersAsync()
+    {
+        loading = true;
+        errorMessage = string.Empty;
+
+        try
+        {
+            var response =
+                await ApiService.GetAsync<
+                    ApiResponse<List<OrderDto>>>(
+                    "api/orders");
+
+            if (response == null)
+            {
+                errorMessage =
+                    "Không nhận được phản hồi từ server.";
+
+                return;
+            }
+
+            if (!response.Success)
+            {
+                errorMessage =
+                    string.IsNullOrWhiteSpace(response.Message)
+                        ? "Không thể tải đơn hàng."
+                        : response.Message;
+
+                return;
+            }
+
+            orders = response.Data ?? [];
+        }
+        catch (Exception ex)
+        {
+            errorMessage =
+                string.IsNullOrWhiteSpace(ex.Message)
+                    ? "Không thể tải đơn hàng."
+                    : ex.Message;
+        }
+        finally
+        {
+            loading = false;
+        }
+    }
+
+    private void ViewOrder(int orderId)
+    {
+        Navigation.NavigateTo(
+            $"/orders/{orderId}");
+    }
+
+    private string GetStatusClass(string status)
+    {
+        return status switch
+        {
+            "Pending" => "pending",
+            "Processing" => "processing",
+            "Shipped" => "shipped",
+            "Delivered" => "delivered",
+            "Cancelled" => "cancelled",
+            _ => string.Empty
+        };
+    }
+
+    private string GetOrderStatusText(string status)
+    {
+        return status switch
+        {
+            "Pending" => "Chờ xử lý",
+            "Processing" => "Đang xử lý",
+            "Shipped" => "Đang giao",
+            "Delivered" => "Đã giao",
+            "Cancelled" => "Đã hủy",
+            _ => status
+        };
+    }
+
+    private string GetPaymentStatusText(string status)
+    {
+        return status switch
+        {
+            "Paid" => "Đã thanh toán",
+            "Pending" => "Chờ thanh toán",
+            "Failed" => "Thanh toán thất bại",
+            _ => status
+        };
+    }
+
+    private void GoToProducts()
+    {
+        Navigation.NavigateTo("/products");
+    }
+
+    private void GoToLogin()
+    {
+        Navigation.NavigateTo("/login");
+    }
+}

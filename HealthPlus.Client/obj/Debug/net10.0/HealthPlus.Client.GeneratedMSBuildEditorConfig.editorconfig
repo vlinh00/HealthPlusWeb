@@ -33,20 +33,12 @@ build_property.EnableCodeStyleSeverity =
 build_metadata.AdditionalFiles.TargetPath = QXBwLnJhem9y
 build_metadata.AdditionalFiles.CssScope = 
 
-[/workspaces/HealthPlusWeb/HealthPlus.Client/Pages/ApiTest.razor]
-build_metadata.AdditionalFiles.TargetPath = UGFnZXMvQXBpVGVzdC5yYXpvcg==
-build_metadata.AdditionalFiles.CssScope = 
-
 [/workspaces/HealthPlusWeb/HealthPlus.Client/Pages/Counter.razor]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXMvQ291bnRlci5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
 
 [/workspaces/HealthPlusWeb/HealthPlus.Client/Pages/NotFound.razor]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXMvTm90Rm91bmQucmF6b3I=
-build_metadata.AdditionalFiles.CssScope = 
-
-[/workspaces/HealthPlusWeb/HealthPlus.Client/Pages/Weather.razor]
-build_metadata.AdditionalFiles.TargetPath = UGFnZXMvV2VhdGhlci5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
 
 [/workspaces/HealthPlusWeb/HealthPlus.Client/Shared/MainLayout.razor]
@@ -69,6 +61,10 @@ build_metadata.AdditionalFiles.CssScope = b-2ymidgxh03
 build_metadata.AdditionalFiles.TargetPath = UGFnZXMvQ2FydC5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = b-hmaxtdlypf
 
+[/workspaces/HealthPlusWeb/HealthPlus.Client/Pages/Checkout.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXMvQ2hlY2tvdXQucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = b-w0pw1zen89
+
 [/workspaces/HealthPlusWeb/HealthPlus.Client/Pages/Home.razor]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXMvSG9tZS5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = b-3ova4ypnyh
@@ -76,6 +72,14 @@ build_metadata.AdditionalFiles.CssScope = b-3ova4ypnyh
 [/workspaces/HealthPlusWeb/HealthPlus.Client/Pages/Login.razor]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXMvTG9naW4ucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = b-gh8rskxuys
+
+[/workspaces/HealthPlusWeb/HealthPlus.Client/Pages/OrderDetail.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXMvT3JkZXJEZXRhaWwucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = b-keuswb17qs
+
+[/workspaces/HealthPlusWeb/HealthPlus.Client/Pages/Orders.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXMvT3JkZXJzLnJhem9y
+build_metadata.AdditionalFiles.CssScope = b-4oxjl79bd2
 
 [/workspaces/HealthPlusWeb/HealthPlus.Client/Pages/ProductDetail.razor]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXMvUHJvZHVjdERldGFpbC5yYXpvcg==
