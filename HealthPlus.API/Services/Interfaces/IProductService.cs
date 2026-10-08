@@ -8,6 +8,7 @@ public interface IProductService
     Task<PagedResult<ProductDto>> GetProductsAsync(
         string? search,
         int? categoryId,
+        string? sort,
         int page,
         int pageSize);
 

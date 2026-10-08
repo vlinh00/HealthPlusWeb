@@ -5,7 +5,7 @@ var e=!1;const t=async()=>WebAssembly.validate(new Uint8Array([0,97,115,109,1,0,
   "mainAssemblyName": "HealthPlus.Client",
   "applicationEnvironment": "Development",
   "resources": {
-    "hash": "sha256-+RLr/79jAwRKGyo8P3DmrfsZCI5zA3K/sjtK9r77t/U=",
+    "hash": "sha256-YSrGG7vh84zfYCaydVxAmkQcC91BvERI4oklTUNosKo=",
     "jsModuleNative": [
       {
         "name": "dotnet.native.b6l13xorvf.js"
@@ -1248,16 +1248,16 @@ var e=!1;const t=async()=>WebAssembly.validate(new Uint8Array([0,97,115,109,1,0,
       },
       {
         "virtualPath": "HealthPlus.Client.wasm",
-        "name": "HealthPlus.Client.5wn4md6egs.wasm",
-        "hash": "sha256-C6QMxkQWgfGBDJdcKupkfOIH6czyTRu7Ib6gM/91OoY=",
+        "name": "HealthPlus.Client.a81ikp59xs.wasm",
+        "hash": "sha256-uv4jGrzVTuVtCRWIGmi/ofQNBFU3n9bI7LKa58myXbI=",
         "cache": "force-cache"
       }
     ],
     "pdb": [
       {
         "virtualPath": "HealthPlus.Client.pdb",
-        "name": "HealthPlus.Client.4bppe4jwyo.pdb",
-        "hash": "sha256-oCUUOwfe1I6VWMRji8hhRpbch0/YQ7ZASeePYfxeiA0=",
+        "name": "HealthPlus.Client.nv2mxp30ws.pdb",
+        "hash": "sha256-7VJLEyVxb3bF6uNCeAXNa0VI9SmUZgviweGn48gwQ0M=",
         "cache": "force-cache"
       }
     ],
