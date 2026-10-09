@@ -176,6 +176,10 @@
                             Sắp xếp
                         </option>
 
+                        <option value="newest">
+                            Mới nhất
+                        </option>
+
                         <option value="price_asc">
                             Giá thấp → cao
                         </option>
@@ -861,6 +865,7 @@
     {
         return sort switch
         {
+            "newest" => "Mới nhất",
             "price_asc" => "Giá thấp → cao",
             "price_desc" => "Giá cao → thấp",
             "name_asc" => "Tên A → Z",
