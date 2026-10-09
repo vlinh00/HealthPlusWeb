@@ -1,14 +1,23 @@
-﻿<CascadingAuthenticationState>
-    <Router AppAssembly="@typeof(App).Assembly"
-            NotFoundPage="typeof(Pages.NotFound)">
+﻿
+<CascadingAuthenticationState>
+    <Router AppAssembly="@typeof(App).Assembly">
         <Found Context="routeData">
-            <RouteView
-                RouteData="@routeData"
-                DefaultLayout="@typeof(MainLayout)" />
-
-            <FocusOnNavigate
-                RouteData="@routeData"
-                Selector="h1" />
+            <AuthorizeRouteView RouteData="@routeData"
+                                DefaultLayout="@typeof(MainLayout)">
+                <NotAuthorized>
+                    <RedirectToLogin />
+                </NotAuthorized>
+                <Authorizing>
+                    <p>Đang kiểm tra quyền truy cập...</p>
+                </Authorizing>
+            </AuthorizeRouteView>
+            <FocusOnNavigate RouteData="@routeData"
+                             Selector="h1" />
         </Found>
+        <NotFound>
+            <LayoutView Layout="@typeof(MainLayout)">
+                <p>Không tìm thấy trang.</p>
+            </LayoutView>
+        </NotFound>
     </Router>
 </CascadingAuthenticationState>

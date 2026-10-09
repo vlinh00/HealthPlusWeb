@@ -104,13 +104,8 @@
 
                             <i class="bi bi-envelope"></i>
 
-                            <input id="login-email"
-                                   type="email"
-                                   placeholder="example@email.com"
-                                   @bind="model.Email"
-                                   @bind:event="oninput"
-                                   disabled="@loading"
-                                   autocomplete="email" />
+                            <input id="login-email" type="email" placeholder="example@email.com" @bind="model.Email"
+                                   @bind:event="oninput" disabled="@loading" autocomplete="email" />
 
                         </div>
 
@@ -129,14 +124,9 @@
 
                             <i class="bi bi-lock"></i>
 
-                            <input id="login-password"
-                                   type="password"
-                                   placeholder="Nhập mật khẩu"
-                                   @bind="model.Password"
-                                   @bind:event="oninput"
-                                   @onkeydown="HandleKeyDown"
-                                   disabled="@loading"
-                                   autocomplete="current-password" />
+                            <input id="login-password" type="password" placeholder="Nhập mật khẩu"
+                                   @bind="model.Password" @bind:event="oninput" @onkeydown="HandleKeyDown"
+                                   disabled="@loading" autocomplete="current-password" />
 
                         </div>
 
@@ -164,10 +154,7 @@
 
                     <!-- LOGIN BUTTON -->
 
-                    <button type="button"
-                            class="auth-submit-button"
-                            @onclick="LoginAsync"
-                            disabled="@loading">
+                    <button type="button" class="auth-submit-button" @onclick="LoginAsync" disabled="@loading">
 
                         @if (loading)
                         {
@@ -204,8 +191,7 @@
                             Chưa có tài khoản?
                         </span>
 
-                        <button type="button"
-                                @onclick="GoToRegister">
+                        <button type="button" @onclick="GoToRegister">
 
                             Đăng ký ngay
 
@@ -271,7 +257,14 @@
 
             await Task.Delay(400);
 
-            Navigation.NavigateTo("/");
+            if (AuthService.CurrentUser?.Role == "Admin")
+            {
+                Navigation.NavigateTo("/admin");
+            }
+            else
+            {
+                Navigation.NavigateTo("/");
+            }
         }
         catch (Exception ex)
         {

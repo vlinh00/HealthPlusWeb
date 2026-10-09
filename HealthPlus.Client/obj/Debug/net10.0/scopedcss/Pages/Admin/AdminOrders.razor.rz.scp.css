@@ -1,0 +1,50 @@
+
+.orders-admin[b-hzefn23ow1] { max-width: 1440px; margin: 0 auto; color: #18352b; }
+.orders-admin-heading[b-hzefn23ow1] { display: flex; align-items: center; justify-content: space-between; gap: 18px; margin-bottom: 26px; }
+.orders-admin-eyebrow[b-hzefn23ow1] { color: #149c76; font-size: 10px; font-weight: 800; letter-spacing: 1.3px; }
+.orders-admin-heading h1[b-hzefn23ow1] { margin: 8px 0; font-size: clamp(27px, 3vw, 35px); letter-spacing: -1px; }
+.orders-admin-heading p[b-hzefn23ow1] { margin: 0; color: #788780; font-size: 13px; }
+.orders-admin-primary[b-hzefn23ow1], .orders-admin-secondary[b-hzefn23ow1] { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 10px 13px; border: 1px solid #dfe8e3; border-radius: 9px; background: white; color: #50645a; font-size: 11px; font-weight: 700; cursor: pointer; white-space: nowrap; }
+.orders-admin-primary[b-hzefn23ow1] { border-color: transparent; background: #0d8b64; color: white; }
+.orders-admin-primary:hover[b-hzefn23ow1] { background: #087652; }
+.orders-admin-secondary:hover[b-hzefn23ow1] { border-color: #9ecdb8; background: #f7fcf9; }
+.orders-admin-secondary.compact[b-hzefn23ow1] { padding: 7px 9px; }
+.orders-admin-toolbar[b-hzefn23ow1] { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 18px; }
+.orders-admin-search[b-hzefn23ow1] { display: flex; align-items: center; gap: 9px; flex: 1; max-width: 450px; min-width: 220px; height: 42px; padding: 0 12px; border: 1px solid #e0e9e4; border-radius: 10px; background: white; color: #8b9b93; }
+.orders-admin-search input[b-hzefn23ow1] { flex: 1; min-width: 0; border: 0; outline: 0; background: transparent; font-size: 12px; }
+.orders-admin-select[b-hzefn23ow1] { height: 42px; min-width: 165px; padding: 0 10px; border: 1px solid #dfe8e3; border-radius: 9px; background: white; color: #263c32; font-size: 12px; }
+.orders-admin-table-wrap[b-hzefn23ow1] { overflow: auto; border: 1px solid #e6eeea; border-radius: 15px; background: white; }
+.orders-admin-table[b-hzefn23ow1] { width: 100%; min-width: 1050px; border-collapse: collapse; font-size: 11px; }
+.orders-admin-table th[b-hzefn23ow1] { padding: 14px 15px; background: #f8faf9; border-bottom: 1px solid #e8efec; color: #7a8982; text-align: left; font-size: 10px; text-transform: uppercase; }
+.orders-admin-table td[b-hzefn23ow1] { padding: 14px 15px; border-bottom: 1px solid #eef2f0; vertical-align: middle; }
+.orders-admin-table tbody tr:last-child td[b-hzefn23ow1] { border-bottom: 0; }
+.orders-admin-table tbody tr:hover[b-hzefn23ow1] { background: #fbfdfc; }
+.orders-admin-table td strong[b-hzefn23ow1], .orders-admin-table td small[b-hzefn23ow1] { display: block; }
+.orders-admin-table td strong[b-hzefn23ow1] { font-size: 11px; }
+.orders-admin-table td small[b-hzefn23ow1] { margin-top: 4px; color: #8d9a94; font-size: 10px; }
+.orders-admin-money[b-hzefn23ow1] { color: #176d51; font-weight: 750; white-space: nowrap; }
+.orders-admin-status[b-hzefn23ow1] { display: inline-flex; padding: 5px 8px; border-radius: 999px; font-size: 10px; font-weight: 750; white-space: nowrap; }
+.orders-admin-status.active[b-hzefn23ow1] { background: #e4f7ed; color: #168259; }
+.orders-admin-status.inactive[b-hzefn23ow1] { background: #ffeded; color: #c34e4e; }
+.orders-admin-status.pending[b-hzefn23ow1] { background: #fff4df; color: #b47b1d; }
+.orders-admin-status.info[b-hzefn23ow1] { background: #eaf2ff; color: #3e71be; }
+.orders-admin-alert[b-hzefn23ow1] { margin-bottom: 15px; padding: 12px 14px; border-radius: 10px; font-size: 12px; }
+.orders-admin-alert.success[b-hzefn23ow1] { background: #eaf8f0; color: #167a51; }
+.orders-admin-alert.error[b-hzefn23ow1] { background: #fff0ef; color: #b94b46; }
+.orders-admin-state[b-hzefn23ow1], .orders-admin-empty[b-hzefn23ow1] { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 42px 20px; border: 1px dashed #dce7e1; border-radius: 15px; background: white; color: #8a9992; text-align: center; }
+.orders-admin-empty i[b-hzefn23ow1] { font-size: 30px; }
+.orders-admin-empty strong[b-hzefn23ow1] { color: #31463d; font-size: 14px; }
+.orders-admin-empty span[b-hzefn23ow1] { font-size: 12px; }
+.orders-admin-count[b-hzefn23ow1] { padding: 15px 2px; color: #85938c; font-size: 11px; }
+.orders-admin-backdrop[b-hzefn23ow1] { position: fixed; inset: 0; z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 18px; background: #102d23a6; backdrop-filter: blur(4px); }
+.orders-admin-modal[b-hzefn23ow1] { width: min(540px, 100%); padding: 25px; border-radius: 19px; background: white; box-shadow: 0 25px 80px #08271d40; }
+.orders-admin-modal-heading[b-hzefn23ow1] { display: flex; align-items: flex-start; justify-content: space-between; gap: 15px; margin-bottom: 22px; }
+.orders-admin-modal-heading h2[b-hzefn23ow1] { margin: 8px 0; font-size: 22px; }
+.orders-admin-icon[b-hzefn23ow1] { display: grid; place-items: center; width: 34px; height: 34px; border: 1px solid #e3ebe7; border-radius: 9px; background: white; color: #61756b; cursor: pointer; }
+.orders-admin-summary[b-hzefn23ow1] { display: flex; justify-content: space-between; gap: 15px; margin-bottom: 20px; padding: 14px; border-radius: 11px; background: #f7faf8; }
+.orders-admin-summary span[b-hzefn23ow1] { color: #829189; font-size: 10px; }
+.orders-admin-summary strong[b-hzefn23ow1] { display: block; margin-top: 5px; color: #2b4438; font-size: 12px; }
+.orders-admin-field[b-hzefn23ow1] { display: flex; flex-direction: column; gap: 8px; color: #50645a; font-size: 11px; font-weight: 750; }
+.orders-admin-field select[b-hzefn23ow1] { padding: 10px; border: 1px solid #dfe8e3; border-radius: 9px; background: white; color: #263c32; font-size: 12px; }
+.orders-admin-modal-actions[b-hzefn23ow1] { display: flex; justify-content: flex-end; gap: 9px; margin-top: 24px; }
+@media (max-width: 650px) { .orders-admin-heading[b-hzefn23ow1] { align-items: flex-start; flex-direction: column; } .orders-admin-toolbar[b-hzefn23ow1] { align-items: stretch; } .orders-admin-search[b-hzefn23ow1] { flex-basis: 100%; max-width: none; } .orders-admin-select[b-hzefn23ow1] { flex: 1; } .orders-admin-modal[b-hzefn23ow1] { padding: 19px; } }
