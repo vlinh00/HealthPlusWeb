@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Microsoft.OpenApi;
+using Microsoft.AspNetCore.StaticFiles;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -89,11 +90,11 @@ builder.Services
 // Repositories
 // =========================
 
-builder.Services.AddScoped<IProductRepository,ProductRepository>();
+builder.Services.AddScoped<IProductRepository, ProductRepository>();
 
-builder.Services.AddScoped<IUserRepository,UserRepository>();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
 
-builder.Services.AddScoped<ICartRepository,CartRepository>();
+builder.Services.AddScoped<ICartRepository, CartRepository>();
 
 builder.Services.AddScoped<IOrderRepository, OrderRepository>();
 
@@ -107,11 +108,11 @@ builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
 // Services
 // =========================
 
-builder.Services.AddScoped<IProductService,ProductService>();
+builder.Services.AddScoped<IProductService, ProductService>();
 
-builder.Services.AddScoped<IAuthService,AuthService>();
+builder.Services.AddScoped<IAuthService, AuthService>();
 
-builder.Services.AddScoped<ICartService,CartService>();
+builder.Services.AddScoped<ICartService, CartService>();
 
 builder.Services.AddScoped<IOrderService, OrderService>();
 
@@ -160,19 +161,33 @@ if (app.Environment.IsDevelopment())
 
 //app.UseHttpsRedirection();
 
-app.UseStaticFiles();
-
 app.UseCors("AllowClient");
 
 // IMPORTANT:
 // Authentication must be before Authorization
 
+app.UseDefaultFiles();
+
+//app.UseStaticFiles();
+// Blazor WASM có các đuôi file mà StaticFiles không biết sẵn (.dat của ICU...)
+var contentTypes = new FileExtensionContentTypeProvider();
+contentTypes.Mappings[".dat"] = "application/octet-stream";
+contentTypes.Mappings[".blat"] = "application/octet-stream";
+contentTypes.Mappings[".webcil"] = "application/octet-stream";
+contentTypes.Mappings[".wasm"] = "application/wasm";
+
+app.UseStaticFiles(new StaticFileOptions
+{
+    ContentTypeProvider = contentTypes
+});
+
 app.UseAuthentication();
 
 app.UseAuthorization();
 
-
-
 app.MapControllers();
+
+// Điều hướng các URL giao diện Blazor về index.html.
+app.MapFallbackToFile("index.html");
 
 app.Run();
