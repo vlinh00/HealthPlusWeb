@@ -36,13 +36,27 @@ else
         }
     }
 
-    private string GetImageUrl(string? imageUrl)
-    {
-        var apiBaseUrl = Configuration["ApiBaseUrl"]
-            ?? "http://localhost:5204/";
+    
+private string GetImageUrl(string? imageUrl)
+{
+    if (string.IsNullOrWhiteSpace(imageUrl))
+        return string.Empty;
 
-        return $"{apiBaseUrl.TrimEnd('/')}/{imageUrl?.TrimStart('/')}";
+    // URL đầy đủ: giữ nguyên, không ghép ApiBaseUrl lần nữa.
+    if (Uri.TryCreate(imageUrl, UriKind.Absolute, out var absoluteUri)
+        && (absoluteUri.Scheme == Uri.UriSchemeHttp
+            || absoluteUri.Scheme == Uri.UriSchemeHttps))
+    {
+        return imageUrl;
     }
+
+    // URL tương đối: ghép với địa chỉ API.
+    var apiBaseUrl = Configuration["ApiBaseUrl"]
+        ?? "http://localhost:5204/";
+
+    return $"{apiBaseUrl.TrimEnd('/')}/{imageUrl.TrimStart('/')}";
+}
+
 
     private void HandleImageError()
     {
