@@ -2,6 +2,7 @@ using HealthPlus.API.Common;
 using HealthPlus.API.DTOs.Product;
 using HealthPlus.API.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 
 namespace HealthPlus.API.Controllers;
 
@@ -54,6 +55,7 @@ public class ProductsController : ControllerBase
 
     // POST: api/products
     [HttpPost]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> CreateProduct(
         [FromBody] ProductRequest request)
     {
@@ -69,6 +71,7 @@ public class ProductsController : ControllerBase
 
     // PUT: api/products/1
     [HttpPut("{id:int}")]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> UpdateProduct(
         int id,
         [FromBody] ProductRequest request)
@@ -94,6 +97,7 @@ public class ProductsController : ControllerBase
 
     // DELETE: api/products/1
     [HttpDelete("{id:int}")]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> DeleteProduct(int id)
     {
         var deleted = await _productService.DeleteAsync(id);

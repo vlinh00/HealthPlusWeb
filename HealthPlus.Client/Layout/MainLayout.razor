@@ -50,6 +50,15 @@
                     <span>Giỏ hàng</span>
                 </a>
 
+                <!-- Admin -->
+                <AuthorizeView Roles="Admin">
+                    <Authorized>
+                        <NavLink href="/admin" class="nav-link">
+                            <span>Quản trị</span>
+                        </NavLink>
+                    </Authorized>
+                </AuthorizeView>
+
                 <AuthorizeView>
                     <Authorized>
 
@@ -73,9 +82,7 @@
                                 </div>
                             </div>
 
-                            <button type="button"
-                                    class="logout-button"
-                                    @onclick="LogoutAsync">
+                            <button type="button" class="logout-button" @onclick="LogoutAsync">
 
                                 <i class="bi bi-box-arrow-right"></i>
                                 <span>Đăng xuất</span>

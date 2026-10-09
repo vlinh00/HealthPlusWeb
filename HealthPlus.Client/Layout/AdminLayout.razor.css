@@ -1,0 +1,585 @@
+
+/* =========================================
+   1. ADMIN LAYOUT
+========================================= */
+
+.admin-shell {
+    --admin-green: #0d8b64;
+    --admin-green-light: #45e0ab;
+    --admin-sidebar-bg: #0b392f;
+
+    display: flex;
+    min-height: 100vh;
+    background: #f4f7f6;
+    color: #18352b;
+    font-family: Inter, system-ui, "Segoe UI", sans-serif;
+}
+
+
+/* =========================================
+   2. SIDEBAR
+========================================= */
+
+.admin-sidebar {
+    box-sizing: border-box;
+    width: 260px;
+    flex: 0 0 260px;
+
+    display: flex;
+    flex-direction: column;
+
+    position: sticky;
+    top: 0;
+
+    height: 100vh;
+    overflow-y: auto;
+
+    padding: 26px 16px 20px;
+
+    color: white;
+    background: linear-gradient(
+        180deg,
+        #0b392f 0%,
+        #0a332a 55%,
+        #092d25 100%
+    );
+
+    border-right: 1px solid #ffffff0d;
+}
+
+
+/* =========================================
+   3. BRAND / LOGO
+========================================= */
+
+.admin-brand {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+
+    padding: 5px 8px 36px;
+
+    color: white;
+    text-decoration: none;
+
+    font-size: 23px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+}
+
+.admin-brand:hover {
+    color: white;
+    text-decoration: none;
+}
+
+.admin-brand span span {
+    color: #42dca8;
+}
+
+.admin-brand-icon {
+    display: grid;
+    place-items: center;
+
+    flex: 0 0 38px;
+    width: 38px;
+    height: 38px;
+
+    border-radius: 12px;
+
+    background: #35d6a1;
+    color: #07382c;
+
+    font-size: 20px;
+    box-shadow: 0 4px 12px #00000018;
+}
+
+
+/* =========================================
+   4. MENU SECTION TITLE
+========================================= */
+
+.admin-nav-label {
+    padding: 10px 10px 16px;
+
+    color: #8db4a7;
+
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 1.35px;
+    line-height: 1.5;
+}
+
+
+/* =========================================
+   5. MENU LIST
+========================================= */
+
+.admin-nav {
+    display: flex;
+    flex-direction: column;
+
+    gap: 11px;
+    padding: 0 2px;
+}
+
+
+/* =========================================
+   6. MENU ITEMS
+========================================= */
+
+.admin-nav a {
+    box-sizing: border-box;
+
+    display: flex;
+    align-items: center;
+    gap: 14px;
+
+    width: 100%;
+    min-height: 53px;
+
+    padding: 13px 14px;
+
+    border: 1px solid #ffffff12;
+    border-radius: 12px;
+
+    background: #ffffff08;
+
+    color: #d0e3dc;
+    text-decoration: none;
+
+    font-size: 15px;
+    font-weight: 600;
+    line-height: 1.4;
+
+    transition:
+        background 0.2s ease,
+        border-color 0.2s ease,
+        color 0.2s ease,
+        box-shadow 0.2s ease,
+        transform 0.2s ease;
+}
+
+
+/* Icon trong menu */
+
+.admin-nav a i {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    flex: 0 0 24px;
+    width: 24px;
+    height: 24px;
+
+    font-size: 19px;
+    line-height: 1;
+    text-align: center;
+}
+
+
+/* Hiệu ứng hover */
+
+.admin-nav a:hover {
+    background: #ffffff16;
+    border-color: #ffffff2b;
+
+    color: #ffffff;
+
+    transform: translateX(2px);
+}
+
+
+/* Menu đang được chọn */
+
+.admin-nav a.active {
+    background: linear-gradient(
+        110deg,
+        #1b7058 0%,
+        #155b49 100%
+    );
+
+    border-color: #3b9a7a;
+
+    color: #ffffff;
+
+    box-shadow:
+        inset 4px 0 #45e0ab,
+        0 4px 12px #001c1425;
+
+    font-weight: 700;
+}
+
+
+/* Không dịch chuyển mục đang chọn */
+
+.admin-nav a.active:hover {
+    transform: none;
+    background: linear-gradient(
+        110deg,
+        #207b61 0%,
+        #17634e 100%
+    );
+}
+
+
+/* =========================================
+   7. SIDEBAR BOTTOM
+========================================= */
+
+.admin-sidebar-bottom {
+    margin-top: auto;
+    padding-top: 18px;
+
+    border-top: 1px solid #ffffff20;
+}
+
+.admin-sidebar-bottom a {
+    box-sizing: border-box;
+
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    width: 100%;
+    min-height: 48px;
+
+    padding: 12px 14px;
+
+    border: 1px solid transparent;
+    border-radius: 11px;
+
+    color: #c2d8d0;
+    text-decoration: none;
+
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1.4;
+
+    transition:
+        background 0.2s ease,
+        border-color 0.2s ease,
+        color 0.2s ease;
+}
+
+.admin-sidebar-bottom a i {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 20px;
+    flex-shrink: 0;
+
+    font-size: 16px;
+}
+
+.admin-sidebar-bottom a:hover {
+    background: #ffffff12;
+    border-color: #ffffff20;
+    color: #ffffff;
+}
+
+
+/* =========================================
+   8. MAIN CONTENT
+========================================= */
+
+.admin-main {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+
+    min-width: 0;
+}
+
+
+/* =========================================
+   9. TOPBAR
+========================================= */
+
+.admin-topbar {
+    box-sizing: border-box;
+
+    position: sticky;
+    top: 0;
+    z-index: 10;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    min-height: 76px;
+    padding: 0 32px;
+
+    background: #ffffff;
+    border-bottom: 1px solid #e8efec;
+}
+
+
+/* Tiêu đề topbar */
+
+.admin-topbar-caption span,
+.admin-topbar-caption strong {
+    display: block;
+}
+
+.admin-topbar-caption span {
+    margin-bottom: 5px;
+
+    color: #1b9d77;
+
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 1.15px;
+}
+
+.admin-topbar-caption strong {
+    color: #18352b;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+
+/* Thông tin người dùng */
+
+.admin-topbar-user {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.admin-topbar-avatar {
+    display: grid;
+    place-items: center;
+
+    flex: 0 0 38px;
+    width: 38px;
+    height: 38px;
+
+    border-radius: 50%;
+
+    background: #e3f7ef;
+    color: #138663;
+
+    font-size: 17px;
+}
+
+.admin-topbar-user strong,
+.admin-topbar-user small {
+    display: block;
+}
+
+.admin-topbar-user strong {
+    color: #18352b;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.admin-topbar-user small {
+    margin-top: 4px;
+
+    color: #8a9a94;
+    font-size: 11px;
+}
+
+
+/* =========================================
+   10. PAGE CONTENT
+========================================= */
+
+.admin-content {
+    box-sizing: border-box;
+
+    flex: 1;
+    min-width: 0;
+
+    padding: 32px 32px 44px;
+}
+
+
+/* =========================================
+   11. TABLET
+========================================= */
+
+@media (max-width: 900px) {
+    .admin-sidebar {
+        width: 230px;
+        flex-basis: 230px;
+
+        padding: 22px 13px 18px;
+    }
+
+    .admin-brand {
+        font-size: 21px;
+        padding-bottom: 30px;
+    }
+
+    .admin-nav {
+        gap: 9px;
+    }
+
+    .admin-nav a {
+        min-height: 49px;
+        padding: 12px;
+        font-size: 14px;
+    }
+
+    .admin-nav a i {
+        font-size: 18px;
+    }
+
+    .admin-content {
+        padding: 25px 20px 35px;
+    }
+
+    .admin-topbar {
+        padding: 0 22px;
+    }
+}
+
+
+/* =========================================
+   12. MOBILE
+========================================= */
+
+@media (max-width: 680px) {
+    .admin-shell {
+        display: block;
+    }
+
+    .admin-sidebar {
+        position: relative;
+
+        width: 100%;
+        height: auto;
+        max-height: none;
+
+        padding: 14px 12px 12px;
+
+        overflow: visible;
+    }
+
+    .admin-brand {
+        gap: 10px;
+        padding: 3px 7px 15px;
+
+        font-size: 21px;
+    }
+
+    .admin-brand-icon {
+        width: 35px;
+        height: 35px;
+    }
+
+    .admin-nav-label {
+        padding: 7px 8px 10px;
+        font-size: 10px;
+    }
+
+    .admin-nav {
+        display: flex;
+        flex-direction: row;
+        align-items: stretch;
+
+        gap: 9px;
+        padding: 0 0 8px;
+
+        overflow-x: auto;
+        overscroll-behavior-x: contain;
+    }
+
+    .admin-nav a {
+        flex: 0 0 auto;
+
+        width: auto;
+        min-height: 45px;
+
+        gap: 9px;
+        padding: 10px 12px;
+
+        border-radius: 10px;
+
+        font-size: 13px;
+        white-space: nowrap;
+    }
+
+    .admin-nav a i {
+        flex: 0 0 19px;
+        width: 19px;
+        height: 19px;
+
+        font-size: 16px;
+    }
+
+    .admin-sidebar-bottom {
+        margin-top: 8px;
+        padding-top: 8px;
+    }
+
+    .admin-sidebar-bottom a {
+        min-height: 40px;
+        padding: 9px 10px;
+        font-size: 12px;
+    }
+
+    .admin-topbar {
+        position: static;
+
+        min-height: 64px;
+        padding: 0 16px;
+    }
+
+    .admin-topbar-caption span {
+        font-size: 9px;
+    }
+
+    .admin-topbar-caption strong {
+        font-size: 12px;
+    }
+
+    .admin-topbar-user {
+        gap: 8px;
+    }
+
+    .admin-topbar-avatar {
+        width: 32px;
+        height: 32px;
+        flex-basis: 32px;
+    }
+
+    .admin-topbar-user strong {
+        font-size: 11px;
+    }
+
+    .admin-topbar-user small {
+        font-size: 10px;
+    }
+
+    .admin-content {
+        padding: 20px 13px 30px;
+    }
+}
+
+
+/* =========================================
+   13. SMALL MOBILE
+========================================= */
+
+@media (max-width: 380px) {
+    .admin-topbar {
+        padding: 0 11px;
+    }
+
+    .admin-topbar-user {
+        gap: 6px;
+    }
+
+    .admin-topbar-avatar {
+        width: 29px;
+        height: 29px;
+        flex-basis: 29px;
+    }
+
+    .admin-content {
+        padding: 16px 10px 25px;
+    }
+}
