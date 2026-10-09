@@ -65,9 +65,11 @@ public class ProductRepository : IProductRepository
                 query
                     .OrderBy(x => x.Name)
                     .ThenBy(x => x.Id),
-
+            "newest" =>
+                query.OrderByDescending(x => x.Id),
+                
             _ =>
-                query.OrderByDescending(x => x.Id)
+                query.OrderBy(x => x.Id)
         };
 
         // Pagination

@@ -81,7 +81,6 @@ HealthPlusWeb/
 Cần có:
 
 - .NET 10 SDK.
-- Git.
 - SQL Server 2022 hoặc phiên bản SQL Server tương thích với database scripts.
 - SQL Server Management Studio (SSMS) hoặc công cụ quản trị SQL tương đương.
 - Docker Desktop hoặc Docker Engine nếu chọn phương án chạy SQL Server bằng Docker.
