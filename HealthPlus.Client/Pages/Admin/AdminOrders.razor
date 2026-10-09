@@ -1,0 +1,206 @@
+
+@page "/admin/orders"
+@attribute [Authorize(Roles = "Admin")]
+@layout AdminLayout
+@using HealthPlus.Client.Services
+@inject ApiService ApiService
+
+<PageTitle>Quản lý đơn hàng | HealthPlus</PageTitle>
+
+<div class="orders-admin">
+    <div class="orders-admin-heading">
+        <div>
+            <span class="orders-admin-eyebrow">ORDER MANAGEMENT</span>
+            <h1>Quản lý đơn hàng</h1>
+            <p>Theo dõi đơn hàng, thanh toán và trạng thái giao hàng.</p>
+        </div>
+        <button class="orders-admin-secondary" @onclick="LoadAsync" disabled="@loading">
+            <i class="bi bi-arrow-clockwise"></i> Làm mới
+        </button>
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(message)) { <div class="orders-admin-alert success">@message</div> }
+    @if (!string.IsNullOrWhiteSpace(error)) { <div class="orders-admin-alert error">@error</div> }
+
+    <div class="orders-admin-toolbar">
+        <div class="orders-admin-search">
+            <i class="bi bi-search"></i>
+            <input placeholder="Mã đơn, tên hoặc email khách..." @bind="search" @bind:event="oninput" />
+        </div>
+        <select class="orders-admin-select" @bind="statusFilter">
+            <option value="">Tất cả trạng thái</option>
+            <option value="Pending">Chờ xử lý</option>
+            <option value="Processing">Đang xử lý</option>
+            <option value="Shipped">Đang giao</option>
+            <option value="Delivered">Đã giao</option>
+            <option value="Cancelled">Đã hủy</option>
+        </select>
+        <button class="orders-admin-secondary" @onclick="LoadAsync">Tải lại</button>
+    </div>
+
+    @if (loading)
+    {
+        <div class="orders-admin-state">Đang tải đơn hàng...</div>
+    }
+    else
+    {
+        var filtered = orders.Where(o =>
+            (string.IsNullOrWhiteSpace(search) ||
+             o.OrderCode.Contains(search, StringComparison.OrdinalIgnoreCase) ||
+             o.CustomerName.Contains(search, StringComparison.OrdinalIgnoreCase) ||
+             o.CustomerEmail.Contains(search, StringComparison.OrdinalIgnoreCase)) &&
+            (string.IsNullOrWhiteSpace(statusFilter) || o.Status == statusFilter)).ToList();
+
+        <div class="orders-admin-table-wrap">
+            <table class="orders-admin-table">
+                <thead>
+                    <tr><th>Đơn hàng</th><th>Khách hàng</th><th>Ngày đặt</th><th>Thanh toán</th><th>Tổng tiền</th><th>Trạng thái</th><th>Thao tác</th></tr>
+                </thead>
+                <tbody>
+                    @foreach (var o in filtered)
+                    {
+                        <tr>
+                            <td><strong>@o.OrderCode</strong><small>#@o.Id</small></td>
+                            <td><strong>@o.CustomerName</strong><small>@o.CustomerEmail</small><small>@o.Phone</small></td>
+                            <td>@o.OrderDate.ToString("dd/MM/yyyy HH:mm")</td>
+                            <td><span class="orders-admin-status @(o.PaymentStatus == "Paid" ? "active" : "pending")">@PaymentText(o.PaymentStatus)</span></td>
+                            <td class="orders-admin-money">@o.TotalAmount.ToString("N0") đ</td>
+                            <td><span class="orders-admin-status @StatusClass(o.Status)">@StatusText(o.Status)</span></td>
+                            <td>
+                                <button class="orders-admin-secondary compact" @onclick="() => OpenStatus(o)">
+                                    <i class="bi bi-arrow-left-right"></i> Cập nhật
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        @if (filtered.Count == 0)
+        {
+            <div class="orders-admin-empty"><i class="bi bi-receipt"></i><strong>Không có đơn hàng phù hợp</strong><span>Thử thay đổi bộ lọc.</span></div>
+        }
+        else
+        {
+            <div class="orders-admin-count">@filtered.Count đơn hàng</div>
+        }
+    }
+</div>
+
+@if (selected is not null)
+{
+    <div class="orders-admin-backdrop" @onclick="CloseStatus">
+        <section class="orders-admin-modal" @onclick:stopPropagation="true">
+            <div class="orders-admin-modal-heading">
+                <div><span class="orders-admin-eyebrow">@selected.OrderCode</span><h2>Cập nhật trạng thái</h2></div>
+                <button class="orders-admin-icon" @onclick="CloseStatus"><i class="bi bi-x-lg"></i></button>
+            </div>
+
+            <div class="orders-admin-summary">
+                <span>Khách hàng<strong>@selected.CustomerName</strong></span>
+                <span>Tổng tiền<strong>@selected.TotalAmount.ToString("N0") đ</strong></span>
+            </div>
+
+            <label class="orders-admin-field">
+                Trạng thái đơn hàng
+                <select @bind="newStatus">
+                    <option value="Pending">Chờ xử lý</option>
+                    <option value="Processing">Đang xử lý</option>
+                    <option value="Shipped">Đang giao</option>
+                    <option value="Delivered">Đã giao</option>
+                    <option value="Cancelled">Đã hủy</option>
+                </select>
+            </label>
+
+            @if (!string.IsNullOrWhiteSpace(formError)) { <div class="orders-admin-alert error">@formError</div> }
+
+            <div class="orders-admin-modal-actions">
+                <button class="orders-admin-secondary" @onclick="CloseStatus">Hủy</button>
+                <button class="orders-admin-primary" @onclick="SaveStatusAsync" disabled="@saving">
+                    @(saving ? "Đang cập nhật..." : "Lưu trạng thái")
+                </button>
+            </div>
+        </section>
+    </div>
+}
+
+@code {
+    private List<AdminOrderDto> orders = [];
+    private string search = "", statusFilter = "", error = "", message = "", newStatus = "", formError = "";
+    private bool loading, saving;
+    private AdminOrderDto? selected;
+
+    protected override async Task OnInitializedAsync() => await LoadAsync();
+
+    private async Task LoadAsync()
+    {
+        loading = true;
+        error = "";
+
+        try
+        {
+            var result = await ApiService.GetAsync<ApiResponse<List<AdminOrderDto>>>("api/orders/admin");
+            if (result?.Success == true) orders = result.Data ?? [];
+            else error = result?.Message ?? "Không tải được đơn hàng.";
+        }
+        catch (Exception ex) { error = $"Không thể tải đơn hàng: {ex.Message}"; }
+        finally { loading = false; }
+    }
+
+    private void OpenStatus(AdminOrderDto order)
+    {
+        selected = order;
+        newStatus = order.Status;
+        formError = "";
+    }
+
+    private void CloseStatus() => selected = null;
+
+    private async Task SaveStatusAsync()
+    {
+        if (selected is null) return;
+        saving = true;
+        formError = "";
+
+        try
+        {
+            var result = await ApiService.PutAsync<UpdateStatusRequest, ApiResponse<object?>>(
+                $"api/orders/{selected.Id}/status",
+                new() { Status = newStatus });
+
+            if (result?.Success == true)
+            {
+                selected = null;
+                message = "Đã cập nhật trạng thái đơn hàng.";
+                await LoadAsync();
+            }
+            else formError = result?.Message ?? "Không thể cập nhật trạng thái.";
+        }
+        catch (Exception ex) { formError = ex.Message; }
+        finally { saving = false; }
+    }
+
+    private static string StatusText(string s) => s switch
+    {
+        "Pending" => "Chờ xử lý", "Processing" => "Đang xử lý",
+        "Shipped" => "Đang giao", "Delivered" => "Đã giao",
+        "Cancelled" => "Đã hủy", _ => s
+    };
+
+    private static string StatusClass(string s) => s switch
+    {
+        "Delivered" => "active", "Cancelled" => "inactive",
+        "Processing" or "Shipped" => "info", _ => "pending"
+    };
+
+    private static string PaymentText(string s) => s switch
+    {
+        "Paid" => "Đã thanh toán", "Pending" => "Chờ thanh toán",
+        "Failed" => "Thất bại", _ => s
+    };
+
+    private sealed class ApiResponse<T> { public bool Success { get; set; } public string Message { get; set; } = ""; public T? Data { get; set; } }
+    private sealed class AdminOrderDto { public int Id { get; set; } public string OrderCode { get; set; } = ""; public int UserId { get; set; } public string CustomerName { get; set; } = ""; public string CustomerEmail { get; set; } = ""; public string? CustomerPhone { get; set; } public DateTime OrderDate { get; set; } public decimal TotalAmount { get; set; } public string Status { get; set; } = ""; public string PaymentStatus { get; set; } = ""; public string ShippingAddress { get; set; } = ""; public string Phone { get; set; } = ""; public DateTime CreatedAt { get; set; } }
+    private sealed class UpdateStatusRequest { public string Status { get; set; } = ""; }
+}

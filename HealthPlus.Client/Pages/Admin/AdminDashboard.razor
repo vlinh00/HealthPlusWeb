@@ -1,0 +1,184 @@
+
+@page "/admin"
+@attribute [Authorize(Roles = "Admin")]
+@layout AdminLayout
+@using HealthPlus.Client.Services
+@inject ApiService ApiService
+
+<PageTitle>Tổng quan | HealthPlus Admin</PageTitle>
+
+<div class="dashboard-page">
+    <div class="dashboard-heading">
+        <div>
+            <span class="dashboard-eyebrow">HEALTHPLUS MANAGEMENT</span>
+            <h1>Tổng quan</h1>
+            <p>Thông tin hoạt động của cửa hàng HealthPlus.</p>
+        </div>
+        <button class="dashboard-button" @onclick="LoadAsync" disabled="@loading">
+            <i class="bi bi-arrow-clockwise"></i> Làm mới
+        </button>
+    </div>
+
+    @if (loading)
+    {
+        <div class="dashboard-state">Đang tải dữ liệu thống kê...</div>
+    }
+    else if (!string.IsNullOrWhiteSpace(error))
+    {
+        <div class="dashboard-error">
+            @error
+            <button class="dashboard-button" @onclick="LoadAsync">Thử lại</button>
+        </div>
+    }
+
+    @if (summary is not null)
+    {
+        <div class="dashboard-stats">
+            <div class="dashboard-stat">
+                <span class="dashboard-stat-icon green"><i class="bi bi-box-seam"></i></span>
+                <span class="dashboard-stat-label">Tổng sản phẩm</span>
+                <strong>@summary.TotalProducts</strong>
+                <small>Sản phẩm trong hệ thống</small>
+            </div>
+            <div class="dashboard-stat">
+                <span class="dashboard-stat-icon blue"><i class="bi bi-receipt"></i></span>
+                <span class="dashboard-stat-label">Tổng đơn hàng</span>
+                <strong>@summary.TotalOrders</strong>
+                <small>Đơn hàng đã ghi nhận</small>
+            </div>
+            <div class="dashboard-stat">
+                <span class="dashboard-stat-icon purple"><i class="bi bi-people"></i></span>
+                <span class="dashboard-stat-label">Khách hàng</span>
+                <strong>@summary.TotalCustomers</strong>
+                <small>Tài khoản khách hàng</small>
+            </div>
+            <div class="dashboard-stat">
+                <span class="dashboard-stat-icon orange"><i class="bi bi-cash-stack"></i></span>
+                <span class="dashboard-stat-label">Tổng doanh thu</span>
+                <strong>@summary.TotalRevenue.ToString("N0") <small>đ</small></strong>
+                <small>Theo API báo cáo</small>
+            </div>
+        </div>
+    }
+
+    <div class="dashboard-section-heading">
+        <div><h2>Truy cập nhanh</h2><p>Chọn khu vực bạn muốn quản lý.</p></div>
+    </div>
+
+    <div class="dashboard-shortcuts">
+        <a href="/admin/products" class="dashboard-shortcut">
+            <span class="dashboard-shortcut-icon green"><i class="bi bi-box-seam"></i></span>
+            <span><strong>Sản phẩm</strong><small>Giá bán, tồn kho và thông tin sản phẩm</small></span>
+            <i class="bi bi-arrow-up-right"></i>
+        </a>
+        <a href="/admin/categories" class="dashboard-shortcut">
+            <span class="dashboard-shortcut-icon blue"><i class="bi bi-tags"></i></span>
+            <span><strong>Danh mục</strong><small>Tổ chức danh mục sản phẩm</small></span>
+            <i class="bi bi-arrow-up-right"></i>
+        </a>
+        <a href="/admin/orders" class="dashboard-shortcut">
+            <span class="dashboard-shortcut-icon orange"><i class="bi bi-receipt"></i></span>
+            <span><strong>Đơn hàng</strong><small>Theo dõi trạng thái xử lý đơn</small></span>
+            <i class="bi bi-arrow-up-right"></i>
+        </a>
+        <a href="/admin/users" class="dashboard-shortcut">
+            <span class="dashboard-shortcut-icon purple"><i class="bi bi-people"></i></span>
+            <span><strong>Người dùng</strong><small>Quản lý trạng thái tài khoản</small></span>
+            <i class="bi bi-arrow-up-right"></i>
+        </a>
+    </div>
+
+    <div class="dashboard-section-heading">
+        <div><h2>Sản phẩm bán chạy</h2><p>Dữ liệu trả về từ API báo cáo.</p></div>
+    </div>
+
+    @if (bestSelling.Count == 0)
+    {
+        <div class="dashboard-empty">
+            <i class="bi bi-bar-chart"></i>
+            <strong>Chưa có dữ liệu bán chạy</strong>
+            <span>Dữ liệu sẽ hiển thị khi API có kết quả.</span>
+        </div>
+    }
+    else
+    {
+        <div class="dashboard-table-wrap">
+            <table class="dashboard-table">
+                <thead><tr><th>Sản phẩm</th><th>Số lượng bán</th><th>Doanh thu</th></tr></thead>
+                <tbody>
+                    @foreach (var item in bestSelling)
+                    {
+                        <tr>
+                            <td><strong>@item.ProductName</strong><small>Mã SP #@item.ProductId</small></td>
+                            <td>@item.QuantitySold</td>
+                            <td class="dashboard-money">@item.Revenue.ToString("N0") đ</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
+
+@code {
+    private bool loading;
+    private string error = "";
+    private SummaryDto? summary;
+    private List<BestSellingDto> bestSelling = [];
+
+    protected override async Task OnInitializedAsync() => await LoadAsync();
+
+    private async Task LoadAsync()
+    {
+        loading = true;
+        error = "";
+
+        try
+        {
+            var result = await ApiService.GetAsync<ApiResponse<SummaryDto>>(
+                "api/reports/summary");
+
+            if (result?.Success == true)
+                summary = result.Data;
+            else
+                error = result?.Message ?? "Không tải được số liệu tổng quan.";
+
+            var products = await ApiService.GetAsync<ApiResponse<List<BestSellingDto>>>(
+                "api/reports/best-selling-products");
+
+            if (products?.Success == true)
+                bestSelling = products.Data ?? [];
+        }
+        catch (Exception ex)
+        {
+            error = $"Không thể tải báo cáo: {ex.Message}";
+        }
+        finally
+        {
+            loading = false;
+        }
+    }
+
+    private sealed class ApiResponse<T>
+    {
+        public bool Success { get; set; }
+        public string Message { get; set; } = "";
+        public T? Data { get; set; }
+    }
+
+    private sealed class SummaryDto
+    {
+        public int TotalOrders { get; set; }
+        public decimal TotalRevenue { get; set; }
+        public int TotalCustomers { get; set; }
+        public int TotalProducts { get; set; }
+    }
+
+    private sealed class BestSellingDto
+    {
+        public int ProductId { get; set; }
+        public string ProductName { get; set; } = "";
+        public int QuantitySold { get; set; }
+        public decimal Revenue { get; set; }
+    }
+}

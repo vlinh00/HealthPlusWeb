@@ -1,0 +1,24 @@
+version: '3.8'
+
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: healthplus-sqlserver
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: "HealthPlus@123456"
+    ports:
+      - "1433:1433"
+    volumes:
+      - healthplus-sql-data:/var/opt/mssql
+
+  dbeaver:
+    image: dbeaver/cloudbeaver:latest
+    container_name: healthplus-dbeaver
+    ports:
+      - "8978:8978"
+    depends_on:
+      - sqlserver
+
+volumes:
+  healthplus-sql-data:

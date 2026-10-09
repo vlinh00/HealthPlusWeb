@@ -1,0 +1,505 @@
+@page "/admin/products"
+@attribute [Authorize(Roles = "Admin")]
+@layout AdminLayout
+@using Microsoft.AspNetCore.Components.Web
+@using HealthPlus.Client.Services
+@using Microsoft.AspNetCore.Components.Forms
+@inject ApiService ApiService
+
+<PageTitle>Quản lý sản phẩm | HealthPlus</PageTitle>
+
+<div class="products-admin">
+    <div class="products-admin-heading">
+        <div>
+            <span class="products-admin-eyebrow">CATALOG MANAGEMENT</span>
+            <h1>Quản lý sản phẩm</h1>
+            <p>Quản lý thông tin, giá bán và tồn kho sản phẩm.</p>
+        </div>
+        <button class="products-admin-primary" @onclick="OpenCreate">
+            <i class="bi bi-plus-lg"></i> Thêm sản phẩm
+        </button>
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(message))
+    {
+        <div class="products-admin-alert success">@message</div>
+    }
+    @if (!string.IsNullOrWhiteSpace(error))
+    {
+        <div class="products-admin-alert error">@error</div>
+    }
+
+    <div class="products-admin-toolbar">
+        <div class="products-admin-search">
+            <i class="bi bi-search"></i>
+            <input placeholder="Tìm tên sản phẩm..." @bind="search" @bind:event="oninput" @onkeydown="SearchKeyDown" />
+        </div>
+        <select class="products-admin-select" @bind="categoryFilter">
+            <option value="">Tất cả danh mục</option>
+            @foreach (var c in categories)
+            {
+                <option value="@c.Id">@c.Name</option>
+            }
+        </select>
+        <button class="products-admin-secondary" @onclick="SearchAsync" disabled="@loading">
+            <i class="bi bi-funnel"></i> Lọc
+        </button>
+    </div>
+
+    @if (loading)
+    {
+        <div class="products-admin-state">Đang tải sản phẩm...</div>
+    }
+    else if (products.Count == 0)
+    {
+        <div class="products-admin-empty">
+            <i class="bi bi-box-seam"></i>
+            <strong>Không tìm thấy sản phẩm</strong>
+            <span>Thử thay đổi bộ lọc hoặc thêm sản phẩm mới.</span>
+        </div>
+    }
+    else
+    {
+        <div class="products-admin-table-wrap">
+            <table class="products-admin-table">
+                <thead>
+                    <tr>
+                        <th>Sản phẩm</th>
+                        <th>Danh mục</th>
+                        <th>Giá bán</th>
+                        <th>Tồn kho</th>
+                        <th>Trạng thái</th>
+                        <th class="text-end">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var p in products)
+                    {
+                        <tr>
+                            <td>
+                                <div class="products-admin-product">
+
+                                    <ProductImage ImageUrl="@p.ImageUrl" Alt="@p.Name" CssClass="product-image-content"
+                                                  PlaceholderClass="product-placeholder" />
+                                    <span><strong>@p.Name</strong><small>#@p.Id</small></span>
+                                </div>
+                            </td>
+                            <td>@p.CategoryName</td>
+                            <td class="products-admin-money">@p.Price.ToString("N0") đ</td>
+                            <td><span class="products-admin-stock @(p.Stock <= 5 ? "low" : "")">@p.Stock</span></td>
+                            <td><span class="products-admin-status @(p.IsActive ? "active" : "inactive")">@(p.IsActive ? "Đang bán" : "Đã ẩn")</span></td>
+                            <td>
+                                <div class="products-admin-actions">
+                                    <button class="products-admin-icon-btn" title="Sửa" @onclick="() => OpenEdit(p)"><i
+                                        class="bi bi-pencil"></i></button>
+                                        <button class="products-admin-icon-btn danger" title="Xóa" @onclick="() => AskDelete(p)"><i
+                                            class="bi bi-trash3"></i></button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="products-admin-pagination">
+                    <span>Trang @(page) · Hiển thị @products.Count sản phẩm</span>
+                    <div>
+                        <button class="products-admin-secondary" disabled="@(page <= 1)" @onclick="PreviousPage">Trước</button>
+                        <button class="products-admin-secondary" disabled="@(products.Count < pageSize)"
+                                @onclick="NextPage">Tiếp</button>
+                    </div>
+                </div>
+            }
+        </div>
+
+        @if (showForm)
+        {
+            <div class="products-admin-backdrop" @onclick="CloseForm">
+                <section class="products-admin-modal" @onclick:stopPropagation="true">
+                    <div class="products-admin-modal-heading">
+                        <div>
+                            <span class="products-admin-eyebrow">PRODUCT DETAILS</span>
+                            <h2>@(editingId.HasValue ? "Cập nhật sản phẩm" : "Thêm sản phẩm")</h2>
+                        </div>
+                        <button class="products-admin-icon-btn" @onclick="CloseForm"><i class="bi bi-x-lg"></i></button>
+                    </div>
+
+                    <div class="products-admin-form">
+                        <label class="wide">Tên sản phẩm<input maxlength="200" @bind="form.Name" /></label>
+                        <label>Danh mục
+                            <select @bind="form.CategoryId">
+                                <option value="0">Chọn danh mục</option>
+                                @foreach (var c in categories)
+                                {
+                                    <option value="@c.Id">@c.Name</option>
+                                }
+                            </select>
+                        </label>
+                        <label>Giá bán (VNĐ)<input type="number" min="0" @bind="form.Price" /></label>
+                        <label>Tồn kho<input type="number" min="0" @bind="form.Stock" /></label>
+                        
+                        <label class="wide">
+                            Hình ảnh sản phẩm
+
+                            <InputFile OnChange="OnImageSelected" accept=".jpg,.jpeg,.png,.webp"
+                                       class="products-admin-file-input" />
+
+                            <span class="products-admin-help">
+                                JPG, PNG hoặc WebP. Dung lượng tối đa 5 MB.
+                            </span>
+
+                            @if (!string.IsNullOrWhiteSpace(imagePreviewUrl))
+                            {
+                                <div class="products-admin-image-preview">
+                                    <img src="@imagePreviewUrl" alt="Xem trước sản phẩm" />
+                                    <div class="products-admin-image-info">
+                                        <strong>@(selectedImage?.Name ?? "Ảnh hiện tại")</strong>
+
+                                        @if (selectedImage is not null)
+                                        {
+                                            <button type="button" class="products-admin-secondary" @onclick="RemoveSelectedImage">
+                                                Bỏ ảnh mới chọn
+                                            </button>
+                                        }
+                                    </div>
+                                </div>
+                            }
+
+                            @if (uploadingImage)
+                            {
+                                <span class="products-admin-help">Đang upload ảnh...</span>
+                            }
+                        </label>
+
+                        <label class="wide">Mô tả<textarea rows="3" @bind="form.Description"></textarea></label>
+                        <label class="products-admin-checkbox wide"><input type="checkbox" @bind="form.IsActive" /> Hiển thị sản
+                            phẩm trên cửa hàng</label>
+                        </div>
+
+                        @if (!string.IsNullOrWhiteSpace(formError))
+                        {
+                            <div class="products-admin-alert error">@formError</div>
+                        }
+
+                        <div class="products-admin-modal-actions">
+                            <button class="products-admin-secondary" @onclick="CloseForm">Hủy</button>
+                            <button class="products-admin-primary" @onclick="SaveAsync" disabled="@(saving || uploadingImage)">
+                                @(uploadingImage ? "Đang upload ảnh..."
+                                    : saving ? "Đang lưu..."
+                                    : "Lưu sản phẩm")
+                            </button>
+                        </div>
+                    </section>
+                </div>
+            }
+
+            @if (deleteTarget is not null)
+            {
+                <div class="products-admin-backdrop" @onclick="CancelDelete">
+                    <section class="products-admin-modal small" @onclick:stopPropagation="true">
+                        <div class="products-admin-delete-icon"><i class="bi bi-trash3"></i></div>
+                        <h2>Xóa sản phẩm?</h2>
+                        <p>Bạn có chắc muốn xóa <strong>@deleteTarget.Name</strong>? Máy chủ có thể từ chối nếu sản phẩm đã phát sinh
+                            đơn hàng.</p>
+                            <div class="products-admin-modal-actions">
+                                <button class="products-admin-secondary" @onclick="CancelDelete">Hủy</button>
+                                <button class="products-admin-danger" @onclick="DeleteAsync" disabled="@saving">Xác nhận xóa</button>
+                            </div>
+                        </section>
+                    </div>
+                }
+
+@code {
+    private List<ProductDto> products = [];
+    private List<CategoryDto> categories = [];
+    private string search = "", categoryFilter = "", error = "", message = "", formError = "";
+    private int page = 1;
+    private const int pageSize = 10;
+    private bool loading, showForm, saving;
+    private int? editingId;
+    private ProductRequest form = new();
+    private ProductDto? deleteTarget;
+    private IBrowserFile? selectedImage;
+    private string? imagePreviewUrl;
+    private bool uploadingImage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadCategoriesAsync();
+        await LoadAsync();
+    }
+
+    private async Task LoadCategoriesAsync()
+    {
+        try
+        {
+            var result = await ApiService.GetAsync<ApiResponse<List<CategoryDto>>>("api/categories");
+            if (result?.Success == true) categories = result.Data ?? [];
+        }
+        catch { }
+    }
+
+    private async Task LoadAsync()
+    {
+        loading = true;
+        error = "";
+        message = "";
+
+        try
+        {
+            var url = $"api/products?page={page}&pageSize={pageSize}";
+            if (!string.IsNullOrWhiteSpace(search))
+                url += $"&search={Uri.EscapeDataString(search.Trim())}";
+            if (int.TryParse(categoryFilter, out var categoryId))
+                url += $"&categoryId={categoryId}";
+
+            var result = await ApiService.GetAsync<ApiResponse<PagedResult<ProductDto>>>(url);
+            if (result?.Success == true)
+                products = result.Data?.Items ?? [];
+            else
+                error = result?.Message ?? "Không tải được danh sách sản phẩm.";
+        }
+        catch (Exception ex) { error = $"Không thể tải sản phẩm: {ex.Message}"; }
+        finally { loading = false; }
+    }
+
+    private async Task SearchAsync() { page = 1; await LoadAsync(); }
+    private async Task SearchKeyDown(KeyboardEventArgs e) { if (e.Key == "Enter") await SearchAsync(); }
+    private async Task PreviousPage() { if (page > 1) { page--; await LoadAsync(); } }
+    private async Task NextPage() { if (products.Count == pageSize) { page++; await LoadAsync(); } }
+
+    private void OpenCreate()
+    {
+        editingId = null;
+        form = new();
+        selectedImage = null;
+        imagePreviewUrl = null;
+        formError = "";
+        showForm = true;
+    }
+
+    private void OpenEdit(ProductDto p)
+    {
+        editingId = p.Id;
+
+        form = new()
+        {
+            CategoryId = p.CategoryId,
+            Name = p.Name,
+            Description = p.Description,
+            Price = p.Price,
+            Stock = p.Stock,
+            ImageUrl = p.ImageUrl,
+            IsActive = p.IsActive
+        };
+
+        selectedImage = null;
+        imagePreviewUrl = p.ImageUrl;
+        formError = "";
+        showForm = true;
+    }
+
+    private void CloseForm() => showForm = false;
+    private void AskDelete(ProductDto p) => deleteTarget = p;
+    private void CancelDelete() => deleteTarget = null;
+
+    
+    private async Task SaveAsync()
+    {
+        formError = "";
+
+        if (string.IsNullOrWhiteSpace(form.Name)
+            || form.CategoryId <= 0
+            || form.Price < 0
+            || form.Stock < 0)
+        {
+            formError = "Vui lòng nhập tên, danh mục hợp lệ, giá và tồn kho không âm.";
+            return;
+        }
+
+        saving = true;
+
+        try
+        {
+            // Bước 1: Upload ảnh nếu Admin đã chọn ảnh mới.
+            if (selectedImage is not null)
+            {
+                uploadingImage = true;
+
+                try
+                {
+                    var uploadResult =
+                        await ApiService.UploadFileAsync<ApiResponse<string>>(
+                            "api/upload/product-image",
+                            selectedImage);
+
+                    if (uploadResult?.Success != true
+                        || string.IsNullOrWhiteSpace(uploadResult.Data))
+                    {
+                        formError = uploadResult?.Message
+                            ?? "Upload ảnh thất bại.";
+
+                        return;
+                    }
+
+                    form.ImageUrl = uploadResult.Data;
+                }
+                finally
+                {
+                    uploadingImage = false;
+                }
+            }
+
+            // Bước 2: Lưu sản phẩm với URL ảnh.
+            ApiResponse<ProductDto>? result;
+
+            if (editingId.HasValue)
+            {
+                result = await ApiService.PutAsync<
+                    ProductRequest,
+                    ApiResponse<ProductDto>>(
+                        $"api/products/{editingId.Value}", form);
+            }
+            else
+            {
+                result = await ApiService.PostAsync<
+                    ProductRequest,
+                    ApiResponse<ProductDto>>(
+                        "api/products", form);
+            }
+
+            if (result?.Success == true)
+            {
+                showForm = false;
+                selectedImage = null;
+                imagePreviewUrl = null;
+
+                message = editingId.HasValue
+                    ? "Đã cập nhật sản phẩm."
+                    : "Đã thêm sản phẩm.";
+
+                await LoadAsync();
+            }
+            else
+            {
+                formError = result?.Message ?? "Không thể lưu sản phẩm.";
+            }
+        }
+        catch (Exception ex)
+        {
+            formError = $"Lưu sản phẩm thất bại: {ex.Message}";
+        }
+        finally
+        {
+            uploadingImage = false;
+            saving = false;
+        }
+    }
+
+
+    private async Task DeleteAsync()
+    {
+        if (deleteTarget is null) return;
+        saving = true;
+
+        try
+        {
+            await ApiService.DeleteAsync($"api/products/{deleteTarget.Id}");
+            deleteTarget = null;
+            message = "Đã gửi yêu cầu xóa sản phẩm.";
+            await LoadAsync();
+        }
+        catch (Exception ex) { error = $"Không thể xóa sản phẩm: {ex.Message}"; }
+        finally { saving = false; }
+    }
+
+    
+    private async Task OnImageSelected(InputFileChangeEventArgs e)
+    {
+        var file = e.File;
+
+        if (file.Size == 0 || file.Size > 5 * 1024 * 1024)
+        {
+            formError = "Ảnh phải có dung lượng từ lớn hơn 0 đến 5 MB.";
+            return;
+        }
+
+        var extension = Path.GetExtension(file.Name).ToLowerInvariant();
+
+        if (extension is not ".jpg" and not ".jpeg"
+            and not ".png" and not ".webp")
+        {
+            formError = "Chỉ chấp nhận ảnh JPG, PNG hoặc WebP.";
+            return;
+        }
+
+        try
+        {
+            await using var stream = file.OpenReadStream(5 * 1024 * 1024);
+            using var memoryStream = new MemoryStream();
+
+            await stream.CopyToAsync(memoryStream);
+
+            selectedImage = file;
+            imagePreviewUrl =
+                $"data:{file.ContentType};base64,{Convert.ToBase64String(memoryStream.ToArray())}";
+
+            formError = "";
+        }
+        catch (Exception ex)
+        {
+            selectedImage = null;
+            formError = $"Không thể đọc ảnh: {ex.Message}";
+        }
+    }
+
+    private void RemoveSelectedImage()
+    {
+        selectedImage = null;
+
+        // Nếu đang sửa sản phẩm, giữ lại ảnh cũ.
+        imagePreviewUrl = form.ImageUrl;
+    }
+
+
+    private sealed class ApiResponse<T>
+    {
+        public bool Success { get; set; }
+        public string Message { get; set; } = ""; public
+T? Data
+        { get; set; }
+    }
+    private sealed class PagedResult<T> { public List<T> Items { get; set; } = []; }
+    private sealed class ProductDto
+    {
+        public int Id { get; set; }
+        public int CategoryId { get; set; }
+        public string
+CategoryName
+        { get; set; } = ""; public string Name { get; set; } = ""; public string? Description { get; set; }
+        public
+decimal Price
+        { get; set; }
+        public int Stock { get; set; }
+        public string? ImageUrl { get; set; }
+        public bool IsActive
+        {
+            get; set;
+        }
+    }
+    private sealed class ProductRequest
+    {
+        public int CategoryId { get; set; }
+        public string Name { get; set; } = ""; public
+string? Description
+        { get; set; }
+        public decimal Price { get; set; }
+        public int Stock { get; set; }
+        public string?
+ImageUrl
+        { get; set; }
+        public bool IsActive { get; set; } = true;
+    }
+    private sealed class CategoryDto { public int Id { get; set; } public string Name { get; set; } = ""; }
+}

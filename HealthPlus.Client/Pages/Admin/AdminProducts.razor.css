@@ -1,0 +1,910 @@
+
+/* =========================================
+   1. PRODUCT ADMIN PAGE
+========================================= */
+
+.products-admin {
+    width: 100%;
+    max-width: 1440px;
+    margin: 0 auto;
+    color: #18352b;
+}
+
+
+/* =========================================
+   2. PAGE HEADER
+========================================= */
+
+.products-admin-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    margin-bottom: 26px;
+}
+
+.products-admin-eyebrow {
+    color: #149c76;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 1.3px;
+}
+
+.products-admin-heading h1 {
+    margin: 8px 0;
+    font-size: clamp(27px, 3vw, 35px);
+    font-weight: 600;
+    letter-spacing: -1px;
+}
+
+.products-admin-heading p {
+    margin: 0;
+    color: #788780;
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+
+/* =========================================
+   3. BUTTONS
+========================================= */
+
+.products-admin-primary,
+.products-admin-secondary,
+.products-admin-danger {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+
+    min-height: 38px;
+    padding: 10px 14px;
+
+    border: 1px solid transparent;
+    border-radius: 9px;
+
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 700;
+
+    cursor: pointer;
+    white-space: nowrap;
+
+    transition:
+        background 0.2s ease,
+        border-color 0.2s ease,
+        color 0.2s ease;
+}
+
+.products-admin-primary {
+    background: #0d8b64;
+    color: #ffffff;
+}
+
+.products-admin-primary:hover {
+    background: #087652;
+}
+
+.products-admin-secondary {
+    background: #ffffff;
+    border-color: #dfe8e3;
+    color: #50645a;
+}
+
+.products-admin-secondary:hover:not(:disabled) {
+    border-color: #9ecdb8;
+    background: #f7fcf9;
+}
+
+.products-admin-danger {
+    background: #c64747;
+    color: #ffffff;
+}
+
+.products-admin-danger:hover {
+    background: #ad3535;
+}
+
+.products-admin button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+
+/* =========================================
+   4. SEARCH AND FILTER TOOLBAR
+========================================= */
+
+.products-admin-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 18px;
+}
+
+.products-admin-search {
+    box-sizing: border-box;
+
+    display: flex;
+    align-items: center;
+    gap: 9px;
+
+    flex: 1;
+    max-width: 450px;
+    min-width: 230px;
+    height: 42px;
+
+    padding: 0 12px;
+
+    border: 1px solid #e0e9e4;
+    border-radius: 10px;
+
+    background: #ffffff;
+    color: #8b9b93;
+}
+
+.products-admin-search:focus-within {
+    border-color: #65c6a0;
+    box-shadow: 0 0 0 3px #22b78017;
+}
+
+.products-admin-search i {
+    flex-shrink: 0;
+    font-size: 15px;
+}
+
+.products-admin-search input {
+    flex: 1;
+    min-width: 0;
+
+    border: 0;
+    outline: 0;
+
+    background: transparent;
+    color: #263c32;
+
+    font-family: inherit;
+    font-size: 12px;
+}
+
+.products-admin-search input::placeholder {
+    color: #a0aaa5;
+}
+
+.products-admin-select {
+    box-sizing: border-box;
+
+    height: 42px;
+    min-width: 170px;
+
+    padding: 0 10px;
+
+    border: 1px solid #dfe8e3;
+    border-radius: 9px;
+
+    outline: 0;
+    background: #ffffff;
+    color: #263c32;
+
+    font-family: inherit;
+    font-size: 12px;
+}
+
+.products-admin-select:focus {
+    border-color: #65c6a0;
+}
+
+
+/* =========================================
+   5. PRODUCT TABLE CONTAINER
+========================================= */
+
+.products-admin-table-wrap {
+    width: 100%;
+    overflow-x: auto;
+
+    border: 1px solid #e6eeea;
+    border-radius: 15px;
+
+    background: #ffffff;
+}
+
+
+/* =========================================
+   6. PRODUCT TABLE
+========================================= */
+
+.products-admin-table {
+    width: 100%;
+    min-width: 850px;
+
+    border-collapse: separate;
+    border-spacing: 0;
+
+    table-layout: auto;
+    font-size: 12px;
+}
+
+.products-admin-table th {
+    padding: 14px 16px;
+
+    background: #f8faf9;
+    border-bottom: 1px solid #e8efec;
+
+    color: #7a8982;
+    text-align: left;
+
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+
+    white-space: nowrap;
+}
+
+.products-admin-table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid #eef2f0;
+    vertical-align: middle;
+}
+
+.products-admin-table tbody tr:last-child td {
+    border-bottom: 0;
+}
+
+.products-admin-table tbody tr {
+    transition: background 0.15s ease;
+}
+
+.products-admin-table tbody tr:hover {
+    background: #fbfdfc;
+}
+
+
+/* =========================================
+   7. PRODUCT IMAGE AND INFORMATION
+========================================= */
+
+.products-admin-product {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+
+    min-width: 220px;
+    max-width: 360px;
+}
+
+/*
+   ProductImage là component Blazor riêng.
+   Giới hạn khung hình để ảnh không chiếm hết dòng.
+*/
+
+.products-admin-product ::deep .product-image-content,
+.products-admin-product ::deep .product-placeholder {
+    box-sizing: border-box;
+
+    display: block;
+    flex: 0 0 76px;
+
+    width: 76px;
+    min-width: 76px;
+    max-width: 76px;
+
+    height: 76px;
+    min-height: 76px;
+    max-height: 76px;
+
+    overflow: hidden;
+    border-radius: 10px;
+
+    background: #f5f8f6;
+}
+
+/* Hình ảnh thực tế */
+
+.products-admin-product ::deep img.product-image-content {
+    width: 100%;
+    height: 100%;
+
+    object-fit: contain;
+    object-position: center;
+
+    display: block;
+}
+
+/* Khung ảnh dự phòng */
+
+.products-admin-product ::deep .product-placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    color: #15956e;
+    font-size: 22px;
+}
+
+/* Tên và mã sản phẩm */
+
+.products-admin-product > span {
+    flex: 1;
+    min-width: 0;
+}
+
+.products-admin-product strong {
+    display: block;
+
+    color: #263c32;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1.5;
+
+    overflow-wrap: anywhere;
+}
+
+.products-admin-product small {
+    display: block;
+    margin-top: 5px;
+
+    color: #8d9a94;
+    font-size: 10px;
+}
+
+
+/* =========================================
+   8. PRICE AND STOCK
+========================================= */
+
+.products-admin-money {
+    color: #176d51;
+    font-weight: 750;
+    white-space: nowrap;
+}
+
+.products-admin-stock {
+    color: #2f6f55;
+    font-weight: 750;
+}
+
+.products-admin-stock.low {
+    color: #d17825;
+}
+
+
+/* =========================================
+   9. PRODUCT STATUS
+========================================= */
+
+.products-admin-status {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 5px 9px;
+    border-radius: 999px;
+
+    font-size: 10px;
+    font-weight: 750;
+    white-space: nowrap;
+}
+
+.products-admin-status.active {
+    background: #e4f7ed;
+    color: #168259;
+}
+
+.products-admin-status.inactive {
+    background: #ffeded;
+    color: #c34e4e;
+}
+
+
+/* =========================================
+   10. ACTION BUTTONS
+========================================= */
+
+.products-admin-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 6px;
+}
+
+.products-admin-icon-btn {
+    display: inline-grid;
+    place-items: center;
+
+    flex: 0 0 34px;
+    width: 34px;
+    height: 34px;
+
+    border: 1px solid #e3ebe7;
+    border-radius: 9px;
+
+    background: #ffffff;
+    color: #61756b;
+
+    cursor: pointer;
+
+    transition:
+        border-color 0.2s ease,
+        background 0.2s ease,
+        color 0.2s ease;
+}
+
+.products-admin-icon-btn:hover {
+    border-color: #a7d9c5;
+    background: #f4fbf7;
+    color: #13845f;
+}
+
+.products-admin-icon-btn.danger:hover {
+    border-color: #f0c4c4;
+    background: #fff7f7;
+    color: #c44b4b;
+}
+
+
+/* =========================================
+   11. PAGINATION
+========================================= */
+
+.products-admin-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+
+    padding: 15px 2px;
+
+    color: #85938c;
+    font-size: 11px;
+}
+
+.products-admin-pagination > div {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+
+/* =========================================
+   12. LOADING AND EMPTY STATES
+========================================= */
+
+.products-admin-state,
+.products-admin-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+
+    padding: 42px 20px;
+
+    border: 1px dashed #dce7e1;
+    border-radius: 15px;
+
+    background: #ffffff;
+    color: #8a9992;
+    text-align: center;
+}
+
+.products-admin-empty i {
+    font-size: 30px;
+}
+
+.products-admin-empty strong {
+    color: #31463d;
+    font-size: 14px;
+}
+
+.products-admin-empty span {
+    font-size: 12px;
+}
+
+
+/* =========================================
+   13. SUCCESS AND ERROR MESSAGES
+========================================= */
+
+.products-admin-alert {
+    margin-bottom: 15px;
+    padding: 12px 14px;
+
+    border-radius: 10px;
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+.products-admin-alert.success {
+    background: #eaf8f0;
+    color: #167a51;
+}
+
+.products-admin-alert.error {
+    background: #fff0ef;
+    color: #b94b46;
+}
+
+
+/* =========================================
+   14. MODAL BACKDROP
+========================================= */
+
+.products-admin-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 18px;
+
+    background: #102d23a6;
+    backdrop-filter: blur(4px);
+}
+
+
+/* =========================================
+   15. MODAL
+========================================= */
+
+.products-admin-modal {
+    box-sizing: border-box;
+
+    width: min(620px, 100%);
+    max-height: 90vh;
+    overflow-y: auto;
+
+    padding: 25px;
+
+    border: 1px solid #e6eeea;
+    border-radius: 19px;
+
+    background: #ffffff;
+    box-shadow: 0 25px 80px #08271d40;
+}
+
+.products-admin-modal.small {
+    width: min(430px, 100%);
+    text-align: center;
+}
+
+.products-admin-modal-heading {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 15px;
+
+    margin-bottom: 22px;
+}
+
+.products-admin-modal-heading h2,
+.products-admin-modal h2 {
+    margin: 8px 0;
+
+    color: #18362b;
+    font-size: 22px;
+    font-weight: 700;
+}
+
+
+/* =========================================
+   16. PRODUCT FORM
+========================================= */
+
+.products-admin-form {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 15px;
+}
+
+.products-admin-form label {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+
+    color: #50645a;
+    font-size: 11px;
+    font-weight: 750;
+}
+
+.products-admin-form .wide {
+    grid-column: 1 / -1;
+}
+
+.products-admin-form input:not([type="checkbox"]),
+.products-admin-form select,
+.products-admin-form textarea {
+    box-sizing: border-box;
+
+    width: 100%;
+    min-width: 0;
+    min-height: 39px;
+
+    padding: 10px 11px;
+
+    border: 1px solid #dfe8e3;
+    border-radius: 9px;
+
+    outline: 0;
+    background: #ffffff;
+    color: #263c32;
+
+    font-family: inherit;
+    font-size: 12px;
+}
+
+.products-admin-form input:focus,
+.products-admin-form select:focus,
+.products-admin-form textarea:focus {
+    border-color: #65c6a0;
+    box-shadow: 0 0 0 3px #22b78017;
+}
+
+.products-admin-form textarea {
+    resize: vertical;
+}
+
+.products-admin-form .products-admin-checkbox {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 9px;
+}
+
+.products-admin-checkbox input {
+    accent-color: #118c65;
+}
+
+
+/* =========================================
+   17. MODAL ACTIONS
+========================================= */
+
+.products-admin-modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 9px;
+
+    margin-top: 24px;
+}
+
+
+/* =========================================
+   18. DELETE CONFIRMATION
+========================================= */
+
+.products-admin-delete-icon {
+    display: grid;
+    place-items: center;
+
+    width: 52px;
+    height: 52px;
+
+    margin: 0 auto 12px;
+
+    border-radius: 16px;
+
+    background: #ffe9e9;
+    color: #c14b4b;
+
+    font-size: 23px;
+}
+
+.products-admin-modal.small p {
+    color: #77867f;
+    font-size: 12px;
+    line-height: 1.7;
+}
+
+
+/* Upload ảnh sản phẩm */
+.products-admin-file-input {
+    box-sizing: border-box;
+    width: 100%;
+    padding: 12px;
+    border: 1px dashed #b9d8c9;
+    border-radius: 10px;
+    background: #f8fcf9;
+    color: #50645a;
+    font-family: inherit;
+    font-size: 12px;
+}
+
+.products-admin-file-input::file-selector-button {
+    margin-right: 12px;
+    padding: 8px 12px;
+    border: 0;
+    border-radius: 7px;
+    background: #e3f7ef;
+    color: #137b58;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.products-admin-help {
+    display: block;
+    margin-top: 5px;
+    color: #829189;
+    font-size: 11px;
+    font-weight: 400;
+}
+
+.products-admin-image-preview {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-top: 12px;
+    padding: 12px;
+    border: 1px solid #e1ebe5;
+    border-radius: 12px;
+    background: #fbfdfc;
+}
+
+.products-admin-image-preview img {
+    display: block;
+    flex: 0 0 100px;
+    width: 100px;
+    height: 100px;
+    object-fit: contain;
+    border-radius: 9px;
+    background: #ffffff;
+}
+
+.products-admin-image-info {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    min-width: 0;
+}
+
+.products-admin-image-info strong {
+    overflow-wrap: anywhere;
+    color: #31463d;
+    font-size: 12px;
+}
+
+@media (max-width: 650px) {
+    .products-admin-image-preview img {
+        flex-basis: 80px;
+        width: 80px;
+        height: 80px;
+    }
+}
+
+
+
+/* =========================================
+   19. TABLET
+========================================= */
+
+@media (max-width: 900px) {
+    .products-admin-table {
+        min-width: 820px;
+    }
+
+    .products-admin-table th,
+    .products-admin-table td {
+        padding-right: 12px;
+        padding-left: 12px;
+    }
+
+    .products-admin-product {
+        min-width: 200px;
+        gap: 10px;
+    }
+
+    .products-admin-product ::deep .product-image-content,
+    .products-admin-product ::deep .product-placeholder {
+        flex-basis: 68px;
+        width: 68px;
+        min-width: 68px;
+        max-width: 68px;
+        height: 68px;
+        min-height: 68px;
+        max-height: 68px;
+    }
+}
+
+
+/* =========================================
+   20. MOBILE
+========================================= */
+
+@media (max-width: 650px) {
+    .products-admin-heading {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 14px;
+    }
+
+    .products-admin-heading h1 {
+        font-size: 27px;
+    }
+
+    .products-admin-heading > button {
+        width: 100%;
+    }
+
+    .products-admin-toolbar {
+        align-items: stretch;
+    }
+
+    .products-admin-search {
+        flex-basis: 100%;
+        max-width: none;
+        min-width: 0;
+    }
+
+    .products-admin-select {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .products-admin-table {
+        min-width: 800px;
+    }
+
+    .products-admin-product {
+        min-width: 190px;
+        gap: 10px;
+    }
+
+    .products-admin-product ::deep .product-image-content,
+    .products-admin-product ::deep .product-placeholder {
+        flex-basis: 60px;
+        width: 60px;
+        min-width: 60px;
+        max-width: 60px;
+        height: 60px;
+        min-height: 60px;
+        max-height: 60px;
+    }
+
+    .products-admin-form {
+        grid-template-columns: 1fr;
+    }
+
+    .products-admin-form .wide {
+        grid-column: auto;
+    }
+
+    .products-admin-modal {
+        padding: 19px;
+    }
+
+    .products-admin-pagination {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .products-admin-modal-actions {
+        flex-wrap: wrap;
+    }
+}
+
+
+/* =========================================
+   21. SMALL MOBILE
+========================================= */
+
+@media (max-width: 380px) {
+    .products-admin-heading h1 {
+        font-size: 24px;
+    }
+
+    .products-admin-modal {
+        padding: 15px;
+    }
+
+    .products-admin-modal-heading h2,
+    .products-admin-modal h2 {
+        font-size: 19px;
+    }
+}

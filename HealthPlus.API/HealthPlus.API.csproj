@@ -1,0 +1,62 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.12" />
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.12" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.12">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.12" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="10.2.3" />
+  </ItemGroup>
+
+
+
+<Target Name="BuildHealthPlusClient" AfterTargets="Build">
+  <PropertyGroup>
+    <ClientProject>$(MSBuildProjectDirectory)/../HealthPlus.Client/HealthPlus.Client.csproj</ClientProject>
+    <ClientPublishDir>$(MSBuildProjectDirectory)/obj/$(Configuration)/ClientPublish/</ClientPublishDir>
+  </PropertyGroup>
+
+  <Exec Command="dotnet publish &quot;$(ClientProject)&quot; -c $(Configuration) -o &quot;$(ClientPublishDir)&quot;" />
+
+  <ItemGroup>
+  <ClientPublishFiles Include="$(ClientPublishDir)wwwroot/**/*" />
+</ItemGroup>
+
+<RemoveDir Directories="$(MSBuildProjectDirectory)/wwwroot/_framework" />
+
+<Copy
+  SourceFiles="@(ClientPublishFiles)"
+  DestinationFiles="@(ClientPublishFiles->'$(MSBuildProjectDirectory)/wwwroot/%(RecursiveDir)%(Filename)%(Extension)')"
+  SkipUnchangedFiles="true" />
+</Target>
+
+<Target Name="PublishHealthPlusClient" AfterTargets="Publish">
+  <PropertyGroup>
+    <ClientProject>$(MSBuildProjectDirectory)/../HealthPlus.Client/HealthPlus.Client.csproj</ClientProject>
+    <ClientPublishDir>$(MSBuildProjectDirectory)/obj/$(Configuration)/ClientPublishForPublish/</ClientPublishDir>
+  </PropertyGroup>
+
+  <Exec Command="dotnet publish &quot;$(ClientProject)&quot; -c $(Configuration) -o &quot;$(ClientPublishDir)&quot;" />
+
+  <ItemGroup>
+  <ClientPublishFilesForPublish Include="$(ClientPublishDir)wwwroot/**/*" />
+</ItemGroup>
+
+<Copy
+  SourceFiles="@(ClientPublishFilesForPublish)"
+  DestinationFiles="@(ClientPublishFilesForPublish->'$(PublishDir)wwwroot/%(RecursiveDir)%(Filename)%(Extension)')"
+  SkipUnchangedFiles="true" />
+</Target>
+
+
+
+</Project>

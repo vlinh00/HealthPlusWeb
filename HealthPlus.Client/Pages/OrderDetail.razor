@@ -1,0 +1,558 @@
+@page "/orders/{OrderId:int}"
+
+@using HealthPlus.Client.Models.Common
+@using HealthPlus.Client.Models.Order
+@using HealthPlus.Client.Services
+
+@inject ApiService ApiService
+@inject AuthService AuthService
+@inject NavigationManager Navigation
+
+<PageTitle>Chi tiết đơn hàng | HealthPlus</PageTitle>
+
+<div class="order-detail-page">
+    <div class="order-detail-container">
+
+        @if (!AuthService.IsAuthenticated)
+        {
+            <div class="order-detail-state">
+                <div class="state-icon">
+                    <i class="bi bi-person-lock"></i>
+                </div>
+
+                <h2>Vui lòng đăng nhập</h2>
+
+                <p>
+                    Bạn cần đăng nhập để xem chi tiết đơn hàng.
+                </p>
+
+                <button class="primary-button"
+                        @onclick="GoToLogin">
+                    <i class="bi bi-box-arrow-in-right"></i>
+                    Đăng nhập
+                </button>
+            </div>
+        }
+        else if (loading)
+        {
+            <div class="order-detail-state">
+                <div class="loading-spinner"></div>
+
+                <h2>Đang tải đơn hàng...</h2>
+
+                <p>Vui lòng chờ trong giây lát.</p>
+            </div>
+        }
+        else if (!string.IsNullOrWhiteSpace(errorMessage))
+        {
+            <div class="order-detail-state">
+                <div class="state-icon error">
+                    <i class="bi bi-exclamation-triangle"></i>
+                </div>
+
+                <h2>Không thể tải đơn hàng</h2>
+
+                <p>@errorMessage</p>
+
+                <button class="primary-button"
+                        @onclick="LoadOrderAsync">
+                    <i class="bi bi-arrow-clockwise"></i>
+                    Thử lại
+                </button>
+            </div>
+        }
+        else if (order == null)
+        {
+            <div class="order-detail-state">
+                <div class="state-icon">
+                    <i class="bi bi-receipt"></i>
+                </div>
+
+                <h2>Không tìm thấy đơn hàng</h2>
+
+                <p>
+                    Đơn hàng không tồn tại hoặc bạn không có quyền xem.
+                </p>
+
+                <button class="primary-button"
+                        @onclick="GoToOrders">
+                    <i class="bi bi-arrow-left"></i>
+                    Quay lại đơn hàng
+                </button>
+            </div>
+        }
+        else
+        {
+            <!-- HEADER -->
+
+            <div class="order-detail-header">
+
+                <div>
+                    <button class="back-button"
+                            @onclick="GoToOrders">
+                        <i class="bi bi-arrow-left"></i>
+                        Đơn hàng của tôi
+                    </button>
+
+                    <span class="order-detail-eyebrow">
+                        CHI TIẾT ĐƠN HÀNG
+                    </span>
+
+                    <h1>@order.OrderCode</h1>
+
+                    <p>
+                        Đặt ngày
+                        @order.OrderDate.ToLocalTime().ToString("dd/MM/yyyy HH:mm")
+                    </p>
+                </div>
+
+                <span class="order-status @GetStatusClass(order.Status)">
+                    @GetOrderStatusText(order.Status)
+                </span>
+
+            </div>
+
+
+            <!-- STATUS -->
+
+            <div class="status-card">
+
+                <div class="status-card-title">
+                    <i class="bi bi-truck"></i>
+
+                    <div>
+                        <h2>Trạng thái đơn hàng</h2>
+
+                        <p>
+                            Theo dõi tiến trình xử lý đơn hàng.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="order-timeline">
+
+                    <div class="timeline-step
+                                @(IsStepActive("Pending") ? "active" : "")
+                                @(IsStepCompleted("Pending") ? "completed" : "")">
+
+                        <div class="timeline-icon">
+                            <i class="bi bi-receipt"></i>
+                        </div>
+
+                        <span>Đặt hàng</span>
+                    </div>
+
+
+                    <div class="timeline-line
+                                @(IsStepCompleted("Processing") ? "completed" : "")">
+                    </div>
+
+
+                    <div class="timeline-step
+                                @(IsStepActive("Processing") ? "active" : "")
+                                @(IsStepCompleted("Processing") ? "completed" : "")">
+
+                        <div class="timeline-icon">
+                            <i class="bi bi-box-seam"></i>
+                        </div>
+
+                        <span>Đang xử lý</span>
+                    </div>
+
+
+                    <div class="timeline-line
+                                @(IsStepCompleted("Shipped") ? "completed" : "")">
+                    </div>
+
+
+                    <div class="timeline-step
+                                @(IsStepActive("Shipped") ? "active" : "")
+                                @(IsStepCompleted("Shipped") ? "completed" : "")">
+
+                        <div class="timeline-icon">
+                            <i class="bi bi-truck"></i>
+                        </div>
+
+                        <span>Đang giao</span>
+                    </div>
+
+
+                    <div class="timeline-line
+                                @(IsStepCompleted("Delivered") ? "completed" : "")">
+                    </div>
+
+
+                    <div class="timeline-step
+                                @(IsStepActive("Delivered") ? "active" : "")
+                                @(IsStepCompleted("Delivered") ? "completed" : "")">
+
+                        <div class="timeline-icon">
+                            <i class="bi bi-check-lg"></i>
+                        </div>
+
+                        <span>Đã giao</span>
+                    </div>
+
+                </div>
+
+                @if (order.Status == "Cancelled")
+                {
+                    <div class="cancelled-message">
+                        <i class="bi bi-x-circle"></i>
+
+                        <span>
+                            Đơn hàng này đã được hủy.
+                        </span>
+                    </div>
+                }
+
+            </div>
+
+
+            <!-- CONTENT -->
+
+            <div class="order-detail-layout">
+
+                <!-- LEFT -->
+
+                <div class="order-detail-main">
+
+                    <!-- PRODUCTS -->
+
+                    <section class="detail-card">
+
+                        <div class="detail-card-header">
+
+                            <div>
+                                <span>SẢN PHẨM</span>
+
+                                <h2>Sản phẩm đã đặt</h2>
+                            </div>
+
+                            <strong>
+                                @order.Items.Count sản phẩm
+                            </strong>
+
+                        </div>
+
+                        <div class="detail-items">
+
+                            @foreach (var item in order.Items)
+                            {
+                                <div class="detail-item">
+
+                                    <div class="product-placeholder">
+                                        <i class="bi bi-capsule"></i>
+                                    </div>
+
+                                    <div class="detail-item-info">
+
+                                        <strong>
+                                            @item.ProductName
+                                        </strong>
+
+                                        <span>
+                                            @item.Quantity ×
+                                            @item.UnitPrice.ToString("N0")₫
+                                        </span>
+
+                                    </div>
+
+                                    <strong class="detail-item-total">
+                                        @item.Subtotal.ToString("N0")₫
+                                    </strong>
+
+                                </div>
+                            }
+
+                        </div>
+
+                    </section>
+
+
+                    <!-- SHIPPING -->
+
+                    <section class="detail-card">
+
+                        <div class="detail-card-header">
+
+                            <div>
+                                <span>GIAO HÀNG</span>
+
+                                <h2>Thông tin nhận hàng</h2>
+                            </div>
+
+                        </div>
+
+                        <div class="shipping-info">
+
+                            <div class="shipping-info-row">
+
+                                <div class="shipping-icon">
+                                    <i class="bi bi-telephone"></i>
+                                </div>
+
+                                <div>
+                                    <span>Số điện thoại</span>
+
+                                    <strong>
+                                        @order.Phone
+                                    </strong>
+                                </div>
+
+                            </div>
+
+
+                            <div class="shipping-info-row">
+
+                                <div class="shipping-icon">
+                                    <i class="bi bi-geo-alt"></i>
+                                </div>
+
+                                <div>
+                                    <span>Địa chỉ nhận hàng</span>
+
+                                    <strong>
+                                        @order.ShippingAddress
+                                    </strong>
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </section>
+
+                </div>
+
+
+                <!-- RIGHT -->
+
+                <aside class="order-detail-summary">
+
+                    <div class="summary-title">
+                        <span>THANH TOÁN</span>
+
+                        <h2>Tổng đơn hàng</h2>
+                    </div>
+
+
+                    <div class="summary-row">
+
+                        <span>Tạm tính</span>
+
+                        <strong>
+                            @order.TotalAmount.ToString("N0")₫
+                        </strong>
+
+                    </div>
+
+
+                    <div class="summary-row">
+
+                        <span>Phí vận chuyển</span>
+
+                        <strong class="free-shipping">
+                            Miễn phí
+                        </strong>
+
+                    </div>
+
+
+                    <div class="summary-divider"></div>
+
+
+                    <div class="summary-total">
+
+                        <span>Tổng cộng</span>
+
+                        <strong>
+                            @order.TotalAmount.ToString("N0")₫
+                        </strong>
+
+                    </div>
+
+
+                    <div class="payment-status">
+
+                        <div class="payment-status-icon">
+                            <i class="bi bi-credit-card"></i>
+                        </div>
+
+                        <div>
+                            <span>Thanh toán</span>
+
+                            <strong>
+                                @GetPaymentStatusText(
+                                    order.PaymentStatus)
+                            </strong>
+                        </div>
+
+                    </div>
+
+
+                    <button class="secondary-button full-width"
+                            @onclick="GoToProducts">
+                        <i class="bi bi-shop"></i>
+                        Tiếp tục mua sắm
+                    </button>
+
+                </aside>
+
+            </div>
+        }
+
+    </div>
+</div>
+
+@code {
+
+    [Parameter]
+    public int OrderId { get; set; }
+
+    private OrderDto? order;
+
+    private bool loading;
+
+    private string errorMessage = string.Empty;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (!AuthService.IsAuthenticated)
+            return;
+
+        await LoadOrderAsync();
+    }
+
+    private async Task LoadOrderAsync()
+    {
+        loading = true;
+        errorMessage = string.Empty;
+        order = null;
+
+        try
+        {
+            var response =
+                await ApiService.GetAsync<
+                    ApiResponse<OrderDto>>(
+                    $"api/orders/{OrderId}");
+
+            if (response == null)
+            {
+                errorMessage =
+                    "Không nhận được phản hồi từ server.";
+
+                return;
+            }
+
+            if (!response.Success)
+            {
+                errorMessage =
+                    string.IsNullOrWhiteSpace(response.Message)
+                        ? "Không thể tải đơn hàng."
+                        : response.Message;
+
+                return;
+            }
+
+            order = response.Data;
+        }
+        catch (Exception ex)
+        {
+            errorMessage =
+                string.IsNullOrWhiteSpace(ex.Message)
+                    ? "Không thể tải đơn hàng."
+                    : ex.Message;
+        }
+        finally
+        {
+            loading = false;
+        }
+    }
+
+    private bool IsStepActive(string step)
+    {
+        if (order == null)
+            return false;
+
+        return order.Status == step;
+    }
+
+    private bool IsStepCompleted(string step)
+    {
+        if (order == null)
+            return false;
+
+        var currentIndex =
+            GetStatusIndex(order.Status);
+
+        var stepIndex =
+            GetStatusIndex(step);
+
+        return currentIndex >= stepIndex;
+    }
+
+    private int GetStatusIndex(string status)
+    {
+        return status switch
+        {
+            "Pending" => 0,
+            "Processing" => 1,
+            "Shipped" => 2,
+            "Delivered" => 3,
+            _ => -1
+        };
+    }
+
+    private string GetStatusClass(string status)
+    {
+        return status switch
+        {
+            "Pending" => "pending",
+            "Processing" => "processing",
+            "Shipped" => "shipped",
+            "Delivered" => "delivered",
+            "Cancelled" => "cancelled",
+            _ => string.Empty
+        };
+    }
+
+    private string GetOrderStatusText(string status)
+    {
+        return status switch
+        {
+            "Pending" => "Chờ xử lý",
+            "Processing" => "Đang xử lý",
+            "Shipped" => "Đang giao",
+            "Delivered" => "Đã giao",
+            "Cancelled" => "Đã hủy",
+            _ => status
+        };
+    }
+
+    private string GetPaymentStatusText(string status)
+    {
+        return status switch
+        {
+            "Paid" => "Đã thanh toán",
+            "Pending" => "Chờ thanh toán",
+            "Failed" => "Thanh toán thất bại",
+            _ => status
+        };
+    }
+
+    private void GoToOrders()
+    {
+        Navigation.NavigateTo("/orders");
+    }
+
+    private void GoToProducts()
+    {
+        Navigation.NavigateTo("/products");
+    }
+
+    private void GoToLogin()
+    {
+        Navigation.NavigateTo("/login");
+    }
+}

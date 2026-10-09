@@ -1,0 +1,893 @@
+@page "/checkout"
+
+@using HealthPlus.Client.Models.Cart
+@using HealthPlus.Client.Models.Common
+@using HealthPlus.Client.Models.Order
+@using HealthPlus.Client.Services
+
+@inject CartService CartService
+@inject ApiService ApiService
+@inject AuthService AuthService
+@inject NavigationManager Navigation
+
+<PageTitle>Thanh toán | HealthPlus</PageTitle>
+
+<div class="checkout-page">
+
+    <div class="checkout-container">
+
+        <div class="checkout-header">
+
+            <div>
+                <span class="checkout-eyebrow">
+                    HEALTHPLUS
+                </span>
+
+                <h1>
+                    Thanh toán
+                </h1>
+
+                <p>
+                    Kiểm tra thông tin và hoàn tất đơn hàng của bạn.
+                </p>
+            </div>
+
+            <button class="back-button"
+                    @onclick="GoToCart">
+
+                <i class="bi bi-arrow-left"></i>
+
+                Quay lại giỏ hàng
+
+            </button>
+
+        </div>
+
+
+        @if (!AuthService.IsAuthenticated)
+        {
+            <div class="checkout-state-card">
+
+                <div class="state-icon">
+                    <i class="bi bi-person-lock"></i>
+                </div>
+
+                <h2>
+                    Vui lòng đăng nhập
+                </h2>
+
+                <p>
+                    Bạn cần đăng nhập trước khi tiến hành đặt hàng.
+                </p>
+
+                <button class="primary-button"
+                        @onclick="GoToLogin">
+
+                    <i class="bi bi-box-arrow-in-right"></i>
+
+                    Đăng nhập
+
+                </button>
+
+            </div>
+        }
+        else if (loading)
+        {
+            <div class="checkout-state-card">
+
+                <div class="loading-spinner"></div>
+
+                <h2>
+                    Đang tải thông tin...
+                </h2>
+
+                <p>
+                    Vui lòng chờ trong giây lát.
+                </p>
+
+            </div>
+        }
+        else if (!string.IsNullOrWhiteSpace(errorMessage)
+                 && cart == null)
+        {
+            <div class="checkout-state-card">
+
+                <div class="state-icon">
+                    <i class="bi bi-exclamation-triangle"></i>
+                </div>
+
+                <h2>
+                    Không thể tải giỏ hàng
+                </h2>
+
+                <p>
+                    @errorMessage
+                </p>
+
+                <button class="primary-button"
+                        @onclick="LoadCheckoutAsync">
+
+                    <i class="bi bi-arrow-clockwise"></i>
+
+                    Thử lại
+
+                </button>
+
+            </div>
+        }
+        else if (cart == null || cart.Items.Count == 0)
+        {
+            <div class="checkout-state-card">
+
+                <div class="state-icon">
+                    <i class="bi bi-cart3"></i>
+                </div>
+
+                <h2>
+                    Giỏ hàng đang trống
+                </h2>
+
+                <p>
+                    Không có sản phẩm để thanh toán.
+                </p>
+
+                <button class="primary-button"
+                        @onclick="GoToProducts">
+
+                    <i class="bi bi-shop"></i>
+
+                    Tiếp tục mua sắm
+
+                </button>
+
+            </div>
+        }
+        else if (orderCompleted)
+        {
+            <div class="checkout-success">
+
+                <div class="success-icon">
+                    <i class="bi bi-check-lg"></i>
+                </div>
+
+                <span class="success-label">
+                    ĐẶT HÀNG THÀNH CÔNG
+                </span>
+
+                <h2>
+                    Cảm ơn bạn đã đặt hàng!
+                </h2>
+
+                @if (createdOrder != null)
+                {
+                    <p>
+                        Mã đơn hàng của bạn là
+
+                        <strong>
+                            @createdOrder.OrderCode
+                        </strong>
+                    </p>
+
+                    <div class="success-info">
+
+                        <div>
+                            <span>
+                                Trạng thái đơn hàng
+                            </span>
+
+                            <strong>
+                                @GetOrderStatusText(
+                                    createdOrder.Status)
+                            </strong>
+                        </div>
+
+                        <div>
+                            <span>
+                                Thanh toán
+                            </span>
+
+                            <strong>
+                                @GetPaymentStatusText(
+                                    createdOrder.PaymentStatus)
+                            </strong>
+                        </div>
+
+                        <div>
+                            <span>
+                                Tổng tiền
+                            </span>
+
+                            <strong>
+                                @createdOrder.TotalAmount.ToString( format: "N0")₫
+                            </strong>
+                        </div>
+
+                    </div>
+                }
+
+                <div class="success-actions">
+
+                    <button class="primary-button"
+                            @onclick="GoToOrders">
+
+                        <i class="bi bi-receipt"></i>
+
+                        Xem đơn hàng
+
+                    </button>
+
+                    <button class="secondary-button"
+                            @onclick="GoToProducts">
+
+                        Tiếp tục mua sắm
+
+                    </button>
+
+                </div>
+
+            </div>
+        }
+        else
+        {
+            <div class="checkout-layout">
+
+                <!-- LEFT -->
+                <div class="checkout-main">
+
+                    <!-- SHIPPING -->
+                    <section class="checkout-card">
+
+                        <div class="card-header">
+
+                            <div class="card-number">
+                                01
+                            </div>
+
+                            <div>
+                                <h2>
+                                    Thông tin nhận hàng
+                                </h2>
+
+                                <p>
+                                    Nhập thông tin để giao đơn hàng.
+                                </p>
+                            </div>
+
+                        </div>
+
+
+                        <div class="checkout-form">
+
+                            <div class="form-group">
+
+                                <label for="phone">
+                                    Số điện thoại
+                                </label>
+
+                                <div class="input-wrapper">
+
+                                    <i class="bi bi-phone"></i>
+
+                                    <input id="phone"
+                                           type="tel"
+                                           placeholder="0901234567"
+                                           @bind="phone"
+                                           disabled="@submitting" />
+
+                                </div>
+
+                            </div>
+
+
+                            <div class="form-group">
+
+                                <label for="shippingAddress">
+                                    Địa chỉ nhận hàng
+                                </label>
+
+                                <div class="input-wrapper textarea-wrapper">
+
+                                    <i class="bi bi-geo-alt"></i>
+
+                                    <textarea id="shippingAddress"
+                                              rows="3"
+                                              placeholder="Nhập địa chỉ nhận hàng..."
+                                              @bind="shippingAddress"
+                                              disabled="@submitting"></textarea>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </section>
+
+
+                    <!-- PAYMENT -->
+                    <section class="checkout-card">
+
+                        <div class="card-header">
+
+                            <div class="card-number">
+                                02
+                            </div>
+
+                            <div>
+                                <h2>
+                                    Phương thức thanh toán
+                                </h2>
+
+                                <p>
+                                    Chọn phương thức thanh toán phù hợp.
+                                </p>
+                            </div>
+
+                        </div>
+
+
+                        <div class="payment-options">
+
+                            <!-- COD -->
+
+                            <label class="payment-option @(paymentMethod == "COD" ? "selected" : "")">
+
+                                <input type="radio"
+                                       name="payment"
+                                       checked="@(paymentMethod == "COD")"
+                                       @onclick="SelectCod"
+                                       disabled="@submitting" />
+
+                                <div class="payment-icon">
+
+                                    <i class="bi bi-cash-stack"></i>
+
+                                </div>
+
+                                <div class="payment-info">
+
+                                    <strong>
+                                        Thanh toán khi nhận hàng
+                                    </strong>
+
+                                    <span>
+                                        Thanh toán tiền mặt khi nhận được hàng.
+                                    </span>
+
+                                </div>
+
+                                <i class="bi bi-check-circle-fill payment-check"></i>
+
+                            </label>
+
+
+                            <!-- MOCK CARD -->
+
+                            <label class="payment-option @(paymentMethod == "MockCard" ? "selected" : "")">
+
+                                <input type="radio"
+                                       name="payment"
+                                       checked="@(paymentMethod == "MockCard")"
+                                       @onclick="SelectMockCard"
+                                       disabled="@submitting" />
+
+                                <div class="payment-icon card">
+
+                                    <i class="bi bi-credit-card"></i>
+
+                                </div>
+
+                                <div class="payment-info">
+
+                                    <strong>
+                                        Thẻ Visa / Mastercard
+                                    </strong>
+
+                                    <span>
+                                        Thanh toán thẻ mô phỏng cho mục đích demo.
+                                    </span>
+
+                                </div>
+
+                                <i class="bi bi-check-circle-fill payment-check"></i>
+
+                            </label>
+
+                        </div>
+
+                    </section>
+
+
+                    @if (!string.IsNullOrWhiteSpace(errorMessage))
+                    {
+                        <div class="checkout-error">
+
+                            <i class="bi bi-exclamation-circle"></i>
+
+                            <span>
+                                @errorMessage
+                            </span>
+
+                        </div>
+                    }
+
+                </div>
+
+
+                <!-- RIGHT -->
+                <aside class="checkout-summary">
+
+                    <div class="summary-header">
+
+                        <div>
+
+                            <span>
+                                ĐƠN HÀNG
+                            </span>
+
+                            <h2>
+                                Tóm tắt đơn hàng
+                            </h2>
+
+                        </div>
+
+                        <i class="bi bi-receipt"></i>
+
+                    </div>
+
+
+                    <div class="summary-items">
+
+                        @foreach (var item in cart.Items)
+                        {
+                            <div class="summary-item">
+
+                                <div class="summary-item-image">
+
+                                   <ProductImage ImageUrl="@item.ImageUrl" Alt="@item.ProductName" CssClass="product-image-content"
+                                              PlaceholderClass="product-placeholder" />
+                                </div>
+
+
+                                <div class="summary-item-info">
+
+                                    <strong>
+                                        @item.ProductName
+                                    </strong>
+
+                                    <span>
+                                        @item.Quantity ×
+                                        @item.Price.ToString("N0")₫
+                                    </span>
+
+                                </div>
+
+
+                                <strong class="summary-item-price">
+                                    @item.Subtotal.ToString("N0")₫
+                                </strong>
+
+                            </div>
+                        }
+
+                    </div>
+
+
+                    <div class="summary-divider"></div>
+
+
+                    <div class="summary-row">
+
+                        <span>
+                            Tạm tính
+                        </span>
+
+                        <strong>
+                            @cart.TotalAmount.ToString("N0")₫
+                        </strong>
+
+                    </div>
+
+
+                    <div class="summary-row">
+
+                        <span>
+                            Phí vận chuyển
+                        </span>
+
+                        <strong class="free-shipping">
+                            Miễn phí
+                        </strong>
+
+                    </div>
+
+
+                    <div class="summary-divider"></div>
+
+
+                    <div class="summary-total">
+
+                        <span>
+                            Tổng cộng
+                        </span>
+
+                        <strong>
+                            @cart.TotalAmount.ToString("N0")₫
+                        </strong>
+
+                    </div>
+
+
+                    <button class="place-order-button"
+                            disabled="@submitting"
+                            @onclick="PlaceOrderAsync">
+
+                        @if (submitting)
+                        {
+                            <span class="button-spinner"></span>
+
+                            <span>
+                                Đang xử lý...
+                            </span>
+                        }
+                        else
+                        {
+                            <span>
+                                Đặt hàng
+                            </span>
+
+                            <i class="bi bi-arrow-right"></i>
+                        }
+
+                    </button>
+
+
+                    <div class="secure-note">
+
+                        <i class="bi bi-shield-check"></i>
+
+                        <span>
+                            Thông tin của bạn được bảo mật.
+                        </span>
+
+                    </div>
+
+                </aside>
+
+            </div>
+        }
+
+    </div>
+
+</div>
+
+
+@code {
+
+    private CartDto? cart;
+
+    private OrderDto? createdOrder;
+
+    private string phone = string.Empty;
+
+    private string shippingAddress = string.Empty;
+
+    private string paymentMethod = "MockCard";
+
+    private string errorMessage = string.Empty;
+
+    private bool loading;
+
+    private bool submitting;
+
+    private bool orderCompleted;
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!AuthService.IsAuthenticated)
+            return;
+
+        await LoadCheckoutAsync();
+    }
+
+
+    private async Task LoadCheckoutAsync()
+    {
+        loading = true;
+
+        errorMessage = string.Empty;
+
+        try
+        {
+            cart = await CartService.LoadAsync();
+        }
+        catch (Exception ex)
+        {
+            cart = null;
+
+            errorMessage =
+                string.IsNullOrWhiteSpace(ex.Message)
+                    ? "Không thể tải giỏ hàng."
+                    : ex.Message;
+        }
+        finally
+        {
+            loading = false;
+        }
+    }
+
+
+    private void SelectCod()
+    {
+        paymentMethod = "COD";
+    }
+
+
+    private void SelectMockCard()
+    {
+        paymentMethod = "MockCard";
+    }
+
+
+    private async Task PlaceOrderAsync()
+    {
+        if (submitting)
+            return;
+
+        errorMessage = string.Empty;
+
+
+        // ==========================================
+        // VALIDATION
+        // ==========================================
+
+        if (string.IsNullOrWhiteSpace(phone))
+        {
+            errorMessage =
+                "Vui lòng nhập số điện thoại.";
+
+            return;
+        }
+
+
+        if (string.IsNullOrWhiteSpace(shippingAddress))
+        {
+            errorMessage =
+                "Vui lòng nhập địa chỉ nhận hàng.";
+
+            return;
+        }
+
+
+        if (cart == null || cart.Items.Count == 0)
+        {
+            errorMessage =
+                "Giỏ hàng đang trống.";
+
+            return;
+        }
+
+
+        submitting = true;
+
+
+        try
+        {
+            // ==========================================
+            // STEP 1
+            // CREATE ORDER
+            // ==========================================
+
+            var orderRequest =
+                new CreateOrderRequest
+                {
+                    ShippingAddress =
+                        shippingAddress.Trim(),
+
+                    Phone =
+                        phone.Trim()
+                };
+
+
+            var orderResponse =
+                await ApiService.PostAsync<
+                    CreateOrderRequest,
+                    ApiResponse<OrderDto>>(
+                    "api/orders",
+                    orderRequest);
+
+
+            if (orderResponse == null)
+            {
+                errorMessage =
+                    "Không nhận được phản hồi từ server.";
+
+                return;
+            }
+
+
+            if (!orderResponse.Success ||
+                orderResponse.Data == null)
+            {
+                errorMessage =
+                    string.IsNullOrWhiteSpace(
+                        orderResponse.Message)
+                            ? "Không thể tạo đơn hàng."
+                            : orderResponse.Message;
+
+                return;
+            }
+
+
+            createdOrder =
+                orderResponse.Data;
+
+
+            // ==========================================
+            // STEP 2
+            // PAYMENT
+            // ==========================================
+
+            var paymentRequest = new
+            {
+                Method = paymentMethod
+            };
+
+
+            var paymentResponse =
+                await ApiService.PostAsync<
+                    object,
+                    ApiResponse<object>>(
+                    $"api/payments/{createdOrder.Id}",
+                    paymentRequest);
+
+
+            if (paymentResponse == null)
+            {
+                errorMessage =
+                    "Không nhận được kết quả thanh toán.";
+
+                return;
+            }
+
+
+            if (!paymentResponse.Success)
+            {
+                errorMessage =
+                    string.IsNullOrWhiteSpace(
+                        paymentResponse.Message)
+                            ? "Thanh toán thất bại."
+                            : paymentResponse.Message;
+
+                return;
+            }
+
+
+            // ==========================================
+            // STEP 3
+            // LOAD UPDATED ORDER
+            // ==========================================
+
+            var orderDetailResponse =
+                await ApiService.GetAsync<
+                    ApiResponse<OrderDto>>(
+                    $"api/orders/{createdOrder.Id}");
+
+
+            if (orderDetailResponse != null &&
+                orderDetailResponse.Success &&
+                orderDetailResponse.Data != null)
+            {
+                createdOrder =
+                    orderDetailResponse.Data;
+            }
+            else
+            {
+                // Nếu không lấy được detail thì
+                // vẫn giữ order vừa tạo.
+                createdOrder.PaymentStatus =
+                    paymentMethod == "MockCard"
+                        ? "Paid"
+                        : "Pending";
+            }
+
+
+            // ==========================================
+            // STEP 4
+            // CLEAR CLIENT CART
+            // ==========================================
+
+            CartService.Clear();
+
+
+            // ==========================================
+            // SUCCESS
+            // ==========================================
+
+            orderCompleted = true;
+        }
+        catch (Exception ex)
+        {
+            errorMessage =
+                string.IsNullOrWhiteSpace(ex.Message)
+                    ? "Có lỗi xảy ra khi đặt hàng."
+                    : ex.Message;
+        }
+        finally
+        {
+            submitting = false;
+        }
+    }
+
+
+    private string GetOrderStatusText(
+        string status)
+    {
+        return status switch
+        {
+            "Pending" =>
+                "Chờ xử lý",
+
+            "Processing" =>
+                "Đang xử lý",
+
+            "Shipped" =>
+                "Đang giao",
+
+            "Delivered" =>
+                "Đã giao",
+
+            "Cancelled" =>
+                "Đã hủy",
+
+            _ =>
+                status
+        };
+    }
+
+
+    private string GetPaymentStatusText(
+        string status)
+    {
+        return status switch
+        {
+            "Paid" =>
+                "Đã thanh toán",
+
+            "Pending" =>
+                "Chờ thanh toán",
+
+            "Failed" =>
+                "Thanh toán thất bại",
+
+            _ =>
+                status
+        };
+    }
+
+
+    private void GoToCart()
+    {
+        Navigation.NavigateTo("/cart");
+    }
+
+
+    private void GoToLogin()
+    {
+        Navigation.NavigateTo("/login");
+    }
+
+
+    private void GoToProducts()
+    {
+        Navigation.NavigateTo("/products");
+    }
+
+
+    private void GoToOrders()
+    {
+        Navigation.NavigateTo("/orders");
+    }
+
+}

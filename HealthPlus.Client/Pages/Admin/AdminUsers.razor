@@ -1,0 +1,191 @@
+
+@page "/admin/users"
+@attribute [Authorize(Roles = "Admin")]
+@layout AdminLayout
+@using HealthPlus.Client.Services
+@inject ApiService ApiService
+
+<PageTitle>Quản lý người dùng | HealthPlus</PageTitle>
+
+<div class="users-admin">
+    <div class="users-admin-heading">
+        <div>
+            <span class="users-admin-eyebrow">USER MANAGEMENT</span>
+            <h1>Quản lý người dùng</h1>
+            <p>Xem thông tin tài khoản và quản lý trạng thái hoạt động.</p>
+        </div>
+        <button class="users-admin-secondary" @onclick="LoadAsync" disabled="@loading">
+            <i class="bi bi-arrow-clockwise"></i> Làm mới
+        </button>
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(message)) { <div class="users-admin-alert success">@message</div> }
+    @if (!string.IsNullOrWhiteSpace(error)) { <div class="users-admin-alert error">@error</div> }
+
+    <div class="users-admin-toolbar">
+        <div class="users-admin-search">
+            <i class="bi bi-search"></i>
+            <input placeholder="Tìm tên, email hoặc số điện thoại..." @bind="search" @bind:event="oninput" />
+        </div>
+        <select class="users-admin-select" @bind="statusFilter">
+            <option value="">Tất cả trạng thái</option>
+            <option value="active">Đang hoạt động</option>
+            <option value="inactive">Đã khóa</option>
+        </select>
+        <button class="users-admin-secondary" @onclick="LoadAsync">Tải lại</button>
+    </div>
+
+    @if (loading)
+    {
+        <div class="users-admin-state">Đang tải người dùng...</div>
+    }
+    else
+    {
+        var filtered = users.Where(u =>
+            (string.IsNullOrWhiteSpace(search) ||
+             u.FullName.Contains(search, StringComparison.OrdinalIgnoreCase) ||
+             u.Email.Contains(search, StringComparison.OrdinalIgnoreCase) ||
+             (u.Phone ?? "").Contains(search, StringComparison.OrdinalIgnoreCase)) &&
+            (string.IsNullOrWhiteSpace(statusFilter) ||
+             (statusFilter == "active" ? u.IsActive : !u.IsActive))).ToList();
+
+        <div class="users-admin-table-wrap">
+            <table class="users-admin-table">
+                <thead><tr><th>Người dùng</th><th>Liên hệ</th><th>Vai trò</th><th>Ngày tạo</th><th>Trạng thái</th><th class="text-end">Thao tác</th></tr></thead>
+                <tbody>
+                    @foreach (var u in filtered)
+                    {
+                        <tr>
+                            <td>
+                                <div class="users-admin-person">
+                                    <span class="users-admin-avatar">@Initials(u.FullName)</span>
+                                    <span><strong>@u.FullName</strong><small>ID #@u.Id</small></span>
+                                </div>
+                            </td>
+                            <td><strong>@u.Email</strong><small class="users-admin-sub">@(string.IsNullOrWhiteSpace(u.Phone) ? "Chưa có số điện thoại" : u.Phone)</small></td>
+                            <td><span class="users-admin-role">@u.Role</span></td>
+                            <td>@u.CreatedAt.ToString("dd/MM/yyyy")</td>
+                            <td><span class="users-admin-status @(u.IsActive ? "active" : "inactive")">@(u.IsActive ? "Đang hoạt động" : "Đã khóa")</span></td>
+                            <td class="text-end">
+                                <button class="users-admin-action @(u.IsActive ? "lock" : "unlock")"
+                                        @onclick="() => AskStatus(u)"
+                                        disabled="@IsProtectedAdmin(u)">
+                                    <i class="bi @(u.IsActive ? "bi-person-lock" : "bi-person-check")"></i>
+                                    @(u.IsActive ? "Khóa" : "Mở khóa")
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        @if (filtered.Count == 0)
+        {
+            <div class="users-admin-empty">
+                <i class="bi bi-people"></i>
+                <strong>Không tìm thấy người dùng</strong>
+                <span>Thử từ khóa hoặc bộ lọc khác.</span>
+            </div>
+        }
+        else
+        {
+            <div class="users-admin-count">@filtered.Count tài khoản</div>
+        }
+    }
+</div>
+
+@if (target is not null)
+{
+    <div class="users-admin-backdrop" @onclick="CancelStatus">
+        <section class="users-admin-modal" @onclick:stopPropagation="true">
+            <div class="users-admin-confirm-icon @(target.IsActive ? "warning" : "")">
+                <i class="bi @(target.IsActive ? "bi-person-lock" : "bi-person-check")"></i>
+            </div>
+            <h2>@(target.IsActive ? "Khóa tài khoản?" : "Mở khóa tài khoản?")</h2>
+            <p>Bạn đang @(target.IsActive ? "khóa" : "mở khóa") tài khoản
+                <strong>@target.FullName</strong> (@target.Email).</p>
+
+            @if (!string.IsNullOrWhiteSpace(formError))
+            {
+                <div class="users-admin-alert error">@formError</div>
+            }
+
+            <div class="users-admin-modal-actions">
+                <button class="users-admin-secondary" @onclick="CancelStatus">Hủy</button>
+                <button class="users-admin-primary" @onclick="SaveStatusAsync" disabled="@saving">
+                    @(saving ? "Đang cập nhật..." : "Xác nhận")
+                </button>
+            </div>
+        </section>
+    </div>
+}
+
+@code {
+    private List<UserDto> users = [];
+    private string search = "", statusFilter = "", error = "", message = "", formError = "";
+    private bool loading, saving;
+    private UserDto? target;
+
+    protected override async Task OnInitializedAsync() => await LoadAsync();
+
+    private async Task LoadAsync()
+    {
+        loading = true;
+        error = "";
+
+        try
+        {
+            var result = await ApiService.GetAsync<ApiResponse<List<UserDto>>>("api/users");
+            if (result?.Success == true) users = result.Data ?? [];
+            else error = result?.Message ?? "Không tải được người dùng.";
+        }
+        catch (Exception ex) { error = $"Không thể tải người dùng: {ex.Message}"; }
+        finally { loading = false; }
+    }
+
+    private void AskStatus(UserDto user)
+    {
+        if (IsProtectedAdmin(user)) return;
+        target = user;
+        formError = "";
+    }
+
+    private void CancelStatus() => target = null;
+
+    private async Task SaveStatusAsync()
+    {
+        if (target is null || IsProtectedAdmin(target)) return;
+
+        saving = true;
+        formError = "";
+
+        try
+        {
+            var result = await ApiService.PutAsync<UpdateUserStatusRequest, ApiResponse<UserDto>>(
+                $"api/users/{target.Id}/status",
+                new() { IsActive = !target.IsActive });
+
+            if (result?.Success == true)
+            {
+                target = null;
+                message = "Đã cập nhật trạng thái tài khoản.";
+                await LoadAsync();
+            }
+            else formError = result?.Message ?? "Không thể cập nhật tài khoản.";
+        }
+        catch (Exception ex) { formError = ex.Message; }
+        finally { saving = false; }
+    }
+
+    private static bool IsProtectedAdmin(UserDto user) =>
+        string.Equals(user.Role, "Admin", StringComparison.OrdinalIgnoreCase);
+
+    private static string Initials(string name) =>
+        string.Join("", name.Split(' ', StringSplitOptions.RemoveEmptyEntries)
+            .TakeLast(2).Select(x => char.ToUpperInvariant(x[0])));
+
+    private sealed class ApiResponse<T> { public bool Success { get; set; } public string Message { get; set; } = ""; public T? Data { get; set; } }
+    private sealed class UserDto { public int Id { get; set; } public string Email { get; set; } = ""; public string FullName { get; set; } = ""; public string? Phone { get; set; } public string? Address { get; set; } public string Role { get; set; } = ""; public bool IsActive { get; set; } public DateTime CreatedAt { get; set; } public DateTime UpdatedAt { get; set; } }
+    private sealed class UpdateUserStatusRequest { public bool IsActive { get; set; } }
+}

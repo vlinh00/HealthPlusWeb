@@ -1,0 +1,1047 @@
+@page "/products"
+
+@using Microsoft.AspNetCore.Components.Web
+@using HealthPlus.Client.Models.Category
+@using HealthPlus.Client.Models.Common
+@using HealthPlus.Client.Models.Product
+@using HealthPlus.Client.Services
+
+@inject ApiService ApiService
+@inject NavigationManager Navigation
+@inject CartService CartService
+@inject AuthService AuthService
+
+
+<PageTitle>Sản phẩm | HealthPlus</PageTitle>
+
+<div class="products-page">
+
+    <!-- =====================================================
+         HERO
+         ===================================================== -->
+
+    <section class="products-hero">
+
+        <div class="products-container">
+
+            <div class="products-hero-content">
+
+                <span class="products-label">
+                    <i class="bi bi-heart-pulse-fill"></i>
+                    HEALTHPLUS
+                </span>
+
+                <h1>
+                    Chăm sóc sức khỏe,
+                    <span>bắt đầu từ hôm nay.</span>
+                </h1>
+
+                <p>
+                    Khám phá các sản phẩm chăm sóc sức khỏe
+                    chất lượng cho bạn và gia đình.
+                </p>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         PRODUCTS
+         ===================================================== -->
+
+    <section class="products-section">
+
+        <div class="products-container">
+
+            <!-- =================================================
+                 CATEGORY
+                 ================================================= -->
+
+            <div class="category-section">
+
+                <div class="section-heading">
+
+                    <div>
+                        <span class="section-label">
+                            DANH MỤC SẢN PHẨM
+                        </span>
+
+                        <h2>
+                            Bạn đang tìm gì?
+                        </h2>
+                    </div>
+
+                    @if (selectedCategoryId.HasValue)
+                    {
+                        <button type="button" class="clear-category-button" @onclick="ClearCategoryAsync">
+
+                            Xóa danh mục
+
+                            <i class="bi bi-x"></i>
+
+                        </button>
+                    }
+
+                </div>
+
+
+                @if (categoriesLoading)
+                {
+                    <div class="category-list">
+
+                        @for (var i = 0; i < 5; i++)
+                        {
+                            <div class="category-skeleton"></div>
+                        }
+
+                    </div>
+                }
+                else if (categories.Count > 0)
+                {
+                    <div class="category-list">
+
+                        <button type="button" class="category-chip @(selectedCategoryId == null ? "active" : "")"
+                                disabled="@loading" @onclick="SelectAllCategoriesAsync">
+
+                            <i class="bi bi-grid"></i>
+
+                            Tất cả
+
+                        </button>
+
+
+                        @foreach (var category in categories)
+                        {
+                            <button type="button" class="category-chip @(selectedCategoryId == category.Id ? "active" : "")"
+                                    disabled="@loading" @onclick="() => SelectCategoryAsync(category.Id)">
+
+                                <i class="bi bi-capsule"></i>
+
+                                @category.Name
+
+                            </button>
+                        }
+
+                    </div>
+                }
+                else
+                {
+                    <div class="category-empty">
+                        Không có danh mục sản phẩm.
+                    </div>
+                }
+
+            </div>
+
+
+            <!-- =================================================
+                 SEARCH + SORT
+                 ================================================= -->
+
+            <div class="products-toolbar">
+
+                <!-- SEARCH -->
+
+                <div class="products-search">
+
+                    <i class="bi bi-search"></i>
+
+                    <input type="text" placeholder="Tìm kiếm sản phẩm..." @bind="searchText" @bind:event="oninput"
+                           @onkeydown="HandleSearchKeyDown" disabled="@loading" />
+
+                    @if (!string.IsNullOrWhiteSpace(searchText))
+                    {
+                        <button type="button" class="search-clear" title="Xóa tìm kiếm" @onclick="ClearSearchAsync">
+
+                            <i class="bi bi-x"></i>
+
+                        </button>
+                    }
+
+                </div>
+
+
+                <!-- SORT -->
+
+                <div class="products-sort">
+
+                    <i class="bi bi-sort-down"></i>
+
+                    <select value="@sort" @onchange="OnSortChanged" disabled="@loading">
+
+                        <option value="">
+                            Sắp xếp
+                        </option>
+
+                        <option value="price_asc">
+                            Giá thấp → cao
+                        </option>
+
+                        <option value="price_desc">
+                            Giá cao → thấp
+                        </option>
+
+                        <option value="name_asc">
+                            Tên A → Z
+                        </option>
+
+                    </select>
+
+                </div>
+
+            </div>
+
+
+            <!-- =================================================
+                 ACTIVE FILTERS
+                 ================================================= -->
+
+            @if (HasActiveFilters)
+            {
+                <div class="active-filters">
+
+                    <span class="active-filter-label">
+                        Đang lọc:
+                    </span>
+
+
+                    @if (!string.IsNullOrWhiteSpace(searchText))
+                    {
+                        <span class="active-filter">
+
+                            <i class="bi bi-search"></i>
+
+                            <span class="active-filter-text">
+                                @searchText
+                            </span>
+
+                            <button type="button" title="Xóa tìm kiếm" @onclick="ClearSearchAsync">
+
+                                <i class="bi bi-x"></i>
+
+                            </button>
+
+                        </span>
+                    }
+
+
+                    @if (selectedCategoryId.HasValue)
+                    {
+                        var selectedCategory =
+                            categories.FirstOrDefault(
+                                x => x.Id == selectedCategoryId.Value);
+
+                        if (selectedCategory != null)
+                        {
+                            <span class="active-filter">
+
+                                <i class="bi bi-tag"></i>
+
+                                <span class="active-filter-text">
+                                    @selectedCategory.Name
+                                </span>
+
+                                <button type="button" title="Xóa danh mục" @onclick="ClearCategoryAsync">
+
+                                    <i class="bi bi-x"></i>
+
+                                </button>
+
+                            </span>
+                        }
+                    }
+
+
+                    @if (!string.IsNullOrWhiteSpace(sort))
+                    {
+                        <span class="active-filter">
+
+                            <i class="bi bi-sort-down"></i>
+
+                            <span class="active-filter-text">
+                                @GetSortText()
+                            </span>
+
+                            <button type="button" title="Xóa sắp xếp" @onclick="ClearSortAsync">
+
+                                <i class="bi bi-x"></i>
+
+                            </button>
+
+                        </span>
+                    }
+
+
+                    <button type="button" class="clear-all-button" @onclick="ClearAllFiltersAsync">
+
+                        Xóa tất cả
+
+                    </button>
+
+                </div>
+            }
+
+
+            <!-- =================================================
+                 RESULT HEADER
+                 ================================================= -->
+
+            <div class="products-result-header">
+
+                @if (products != null)
+                {
+                    <div class="result-summary">
+
+                        <strong>
+                            Sản phẩm
+                        </strong>
+
+                        <span>
+                            @products.TotalItems sản phẩm
+                        </span>
+
+                    </div>
+                }
+
+                @if (loading && products != null)
+                {
+                    <span class="result-loading">
+                        <span class="mini-spinner"></span>
+                        Đang cập nhật...
+                    </span>
+                }
+
+            </div>
+
+
+            <!-- =================================================
+                 INITIAL LOADING
+                 ================================================= -->
+
+            @if (loading && products == null)
+            {
+                <div class="product-grid">
+
+                    @for (var i = 0; i < 8; i++)
+                    {
+                        <div class="product-card product-skeleton">
+
+                            <div class="skeleton-image"></div>
+
+                            <div class="skeleton-content">
+
+                                <div class="skeleton-line category"></div>
+
+                                <div class="skeleton-line"></div>
+
+                                <div class="skeleton-line short"></div>
+
+                                <div class="skeleton-price"></div>
+
+                                <div class="skeleton-button"></div>
+
+                            </div>
+
+                        </div>
+                    }
+
+                </div>
+            }
+
+            else if (!string.IsNullOrWhiteSpace(errorMessage))
+            {
+                <div class="products-state">
+
+                    <div class="state-icon error">
+                        <i class="bi bi-exclamation-triangle"></i>
+                    </div>
+
+                    <h2>
+                        Không thể tải sản phẩm
+                    </h2>
+
+                    <p>
+                        @errorMessage
+                    </p>
+
+                    <button type="button" class="products-primary-button" @onclick="LoadProductsAsync">
+
+                        <i class="bi bi-arrow-clockwise"></i>
+
+                        Thử lại
+
+                    </button>
+
+                </div>
+            }
+
+
+            else if (products != null &&
+                     products.Items.Count == 0)
+            {
+                <div class="products-state">
+
+                    <div class="state-icon">
+                        <i class="bi bi-search"></i>
+                    </div>
+
+                    <h2>
+                        Không tìm thấy sản phẩm
+                    </h2>
+
+                    <p>
+                        Không có sản phẩm phù hợp với điều kiện tìm kiếm
+                        hoặc bộ lọc hiện tại.
+                    </p>
+
+                    @if (HasActiveFilters)
+                    {
+                        <button type="button" class="products-outline-button" @onclick="ClearAllFiltersAsync">
+
+                            <i class="bi bi-arrow-counterclockwise"></i>
+
+                            Xóa bộ lọc
+
+                        </button>
+                    }
+                    else
+                    {
+                        <button type="button" class="products-outline-button" @onclick="LoadProductsAsync">
+
+                            <i class="bi bi-arrow-clockwise"></i>
+
+                            Tải lại
+
+                        </button>
+                    }
+
+                </div>
+            }
+
+
+            else if (products != null)
+            {
+                <div class="product-grid">
+
+                    @foreach (var product in products.Items)
+                    {
+                        <article class="product-card">
+
+                            <!-- IMAGE -->
+
+                            <button type="button" class="product-image" aria-label="Xem @product.Name"
+                                    @onclick="() => OpenProduct(product.Id)">
+
+                                <ProductImage ImageUrl="@product.ImageUrl" Alt="@product.Name" CssClass="product-image-content"
+                                              PlaceholderClass="product-placeholder" />
+                               
+                                @if (!product.IsActive)
+                                {
+                                    <span class="product-status">
+                                        Ngừng bán
+                                    </span>
+                                }
+
+                            </button>
+
+
+                            <!-- CONTENT -->
+
+                            <div class="product-content">
+
+                                <span class="product-category">
+                                    @(string.IsNullOrWhiteSpace(product.CategoryName)
+                                        ? "Sản phẩm"
+                                        : product.CategoryName)
+                                </span>
+
+
+                                <button type="button" class="product-name" title="@product.Name"
+                                        @onclick="() => OpenProduct(product.Id)">
+
+                                    @product.Name
+
+                                </button>
+
+
+                                <div class="product-stock">
+
+                                    @if (product.Stock > 0 &&
+                                         product.IsActive)
+                                    {
+                                        <span class="in-stock">
+
+                                            <i class="bi bi-check-circle-fill"></i>
+
+                                            Còn @product.Stock sản phẩm
+
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="out-of-stock">
+
+                                            <i class="bi bi-x-circle-fill"></i>
+
+                                            Hết hàng
+
+                                        </span>
+                                    }
+
+                                </div>
+
+
+                                <div class="product-bottom">
+
+                                    <strong class="product-price">
+                                        @product.Price.ToString("N0")đ
+                                    </strong>
+
+
+                                    <button type="button" class="product-detail-button" title="Xem chi tiết"
+                                            @onclick="() => OpenProduct(product.Id)">
+
+                                        <i class="bi bi-arrow-up-right"></i>
+
+                                    </button>
+
+                                </div>
+
+
+                                <button type="button" class="add-cart-button"
+                                        disabled="@(product.Stock <= 0 || !product.IsActive)"
+                                        @onclick="() => AddToCartAsync(product)">
+
+                                    <i class="bi bi-cart-plus"></i>
+
+                                    @if (product.Stock > 0 &&
+                                         product.IsActive)
+                                    {
+                                        <span>
+                                            Thêm vào giỏ
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span>
+                                            Hết hàng
+                                        </span>
+                                    }
+
+                                </button>
+
+                            </div>
+
+                        </article>
+                    }
+
+                </div>
+
+
+                <!-- =================================================
+                     PAGINATION
+                     ================================================= -->
+
+                @if (products.TotalPages > 1)
+                {
+                    <div class="products-pagination">
+
+                        <button type="button" class="pagination-button" disabled="@(page <= 1 || loading)"
+                                aria-label="Trang trước" @onclick="PreviousPageAsync">
+
+                            <i class="bi bi-chevron-left"></i>
+
+                        </button>
+
+
+                        @foreach (var pageNumber in GetPageNumbers())
+                        {
+                            <button type="button" class="pagination-button @(pageNumber == page ? "active" : "")"
+                                    disabled="@loading" @onclick="() => GoToPageAsync(pageNumber)">
+
+                                @pageNumber
+
+                            </button>
+                        }
+
+
+                        <button type="button" class="pagination-button" disabled="@(page >= products.TotalPages || loading)"
+                                aria-label="Trang sau" @onclick="NextPageAsync">
+
+                            <i class="bi bi-chevron-right"></i>
+
+                        </button>
+
+                    </div>
+                }
+
+            }
+
+        </div>
+
+    </section>
+
+</div>
+
+
+<!-- =========================================================
+     TOAST
+     ========================================================= -->
+
+@if (!string.IsNullOrWhiteSpace(toastMessage))
+{
+    <div class="products-toast">
+
+        <i class="bi bi-check-circle-fill"></i>
+
+        <span>
+            @toastMessage
+        </span>
+
+    </div>
+}
+
+
+@code {
+
+    private PagedResult<ProductDto>? products;
+
+    private List<CategoryDto> categories = [];
+
+    private string searchText = string.Empty;
+
+    private string sort = string.Empty;
+
+    private int? selectedCategoryId;
+
+    private string errorMessage = string.Empty;
+
+    private string toastMessage = string.Empty;
+
+    private bool loading;
+
+    private bool categoriesLoading;
+
+    private int page = 1;
+
+    private const int PageSize = 8;
+
+
+    private bool HasActiveFilters =>
+        !string.IsNullOrWhiteSpace(searchText)
+        || selectedCategoryId.HasValue
+        || !string.IsNullOrWhiteSpace(sort);
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Task.WhenAll(
+            LoadCategoriesAsync(),
+            LoadProductsAsync());
+    }
+
+
+    // =========================================================
+    // CATEGORIES
+    // =========================================================
+
+    private async Task LoadCategoriesAsync()
+    {
+        categoriesLoading = true;
+
+        try
+        {
+            var response =
+                await ApiService.GetAsync<
+                    ApiResponse<List<CategoryDto>>>(
+                    "api/categories");
+
+            if (response != null &&
+                response.Success)
+            {
+                categories =
+                    response.Data ?? [];
+            }
+        }
+        catch
+        {
+            categories = [];
+        }
+        finally
+        {
+            categoriesLoading = false;
+        }
+    }
+
+
+    private async Task SelectCategoryAsync(int categoryId)
+    {
+        if (selectedCategoryId == categoryId)
+            return;
+
+        selectedCategoryId = categoryId;
+
+        page = 1;
+
+        await LoadProductsAsync();
+    }
+
+
+    private async Task SelectAllCategoriesAsync()
+    {
+        if (!selectedCategoryId.HasValue)
+            return;
+
+        selectedCategoryId = null;
+
+        page = 1;
+
+        await LoadProductsAsync();
+    }
+
+
+    private async Task ClearCategoryAsync()
+    {
+        if (!selectedCategoryId.HasValue)
+            return;
+
+        selectedCategoryId = null;
+
+        page = 1;
+
+        await LoadProductsAsync();
+    }
+
+
+    // =========================================================
+    // PRODUCTS
+    // =========================================================
+
+    private async Task LoadProductsAsync()
+    {
+        if (loading)
+            return;
+
+        loading = true;
+        errorMessage = string.Empty;
+
+        try
+        {
+            var url =
+                $"api/products?page={page}&pageSize={PageSize}";
+
+
+            if (!string.IsNullOrWhiteSpace(searchText))
+            {
+                url +=
+                    $"&search={Uri.EscapeDataString(searchText.Trim())}";
+            }
+
+
+            if (selectedCategoryId.HasValue)
+            {
+                url +=
+                    $"&categoryId={selectedCategoryId.Value}";
+            }
+
+
+            if (!string.IsNullOrWhiteSpace(sort))
+            {
+                url +=
+                    $"&sort={Uri.EscapeDataString(sort)}";
+            }
+
+
+            var response =
+                await ApiService.GetAsync<
+                    ApiResponse<PagedResult<ProductDto>>>(
+                    url);
+
+
+            if (response == null)
+            {
+                errorMessage =
+                    "Không nhận được dữ liệu từ máy chủ.";
+
+                return;
+            }
+
+
+            if (!response.Success)
+            {
+                errorMessage =
+                    string.IsNullOrWhiteSpace(response.Message)
+                        ? "Không thể tải danh sách sản phẩm."
+                        : response.Message;
+
+                return;
+            }
+
+
+            products =
+                response.Data;
+        }
+        catch (Exception ex)
+        {
+            errorMessage =
+                string.IsNullOrWhiteSpace(ex.Message)
+                    ? "Có lỗi xảy ra khi tải sản phẩm."
+                    : ex.Message;
+        }
+        finally
+        {
+            loading = false;
+        }
+    }
+
+
+    // =========================================================
+    // SEARCH
+    // =========================================================
+
+    private async Task HandleSearchKeyDown(
+        KeyboardEventArgs e)
+    {
+        if (e.Key != "Enter")
+            return;
+
+        page = 1;
+
+        await LoadProductsAsync();
+    }
+
+
+    private async Task ClearSearchAsync()
+    {
+        if (string.IsNullOrWhiteSpace(searchText))
+            return;
+
+        searchText = string.Empty;
+
+        page = 1;
+
+        await LoadProductsAsync();
+    }
+
+
+    // =========================================================
+    // SORT
+    // =========================================================
+
+    private async Task OnSortChanged(
+        ChangeEventArgs e)
+    {
+        sort =
+            e.Value?.ToString()
+            ?? string.Empty;
+
+        page = 1;
+
+        await LoadProductsAsync();
+    }
+
+
+    private async Task ClearSortAsync()
+    {
+        if (string.IsNullOrWhiteSpace(sort))
+            return;
+
+        sort = string.Empty;
+
+        page = 1;
+
+        await LoadProductsAsync();
+    }
+
+
+    private string GetSortText()
+    {
+        return sort switch
+        {
+            "price_asc" => "Giá thấp → cao",
+            "price_desc" => "Giá cao → thấp",
+            "name_asc" => "Tên A → Z",
+            _ => string.Empty
+        };
+    }
+
+
+    // =========================================================
+    // CLEAR FILTERS
+    // =========================================================
+
+    private async Task ClearAllFiltersAsync()
+    {
+        if (!HasActiveFilters)
+            return;
+
+        searchText = string.Empty;
+
+        sort = string.Empty;
+
+        selectedCategoryId = null;
+
+        page = 1;
+
+        await LoadProductsAsync();
+    }
+
+
+    // =========================================================
+    // PAGINATION
+    // =========================================================
+
+    private async Task GoToPageAsync(int pageNumber)
+    {
+        if (products == null)
+            return;
+
+        if (pageNumber < 1 ||
+            pageNumber > products.TotalPages ||
+            pageNumber == page)
+            return;
+
+        page = pageNumber;
+
+        await LoadProductsAsync();
+
+        await ScrollToTopAsync();
+    }
+
+
+    private async Task PreviousPageAsync()
+    {
+        if (page <= 1)
+            return;
+
+        page--;
+
+        await LoadProductsAsync();
+
+        await ScrollToTopAsync();
+    }
+
+
+    private async Task NextPageAsync()
+    {
+        if (products == null ||
+            page >= products.TotalPages)
+            return;
+
+        page++;
+
+        await LoadProductsAsync();
+
+        await ScrollToTopAsync();
+    }
+
+
+    private IEnumerable<int> GetPageNumbers()
+    {
+        if (products == null)
+            return [];
+
+        var totalPages = products.TotalPages;
+
+        if (totalPages <= 7)
+        {
+            return Enumerable
+                .Range(1, totalPages);
+        }
+
+        var start =
+            Math.Max(1, page - 2);
+
+        var end =
+            Math.Min(totalPages, page + 2);
+
+        if (page <= 3)
+        {
+            start = 1;
+            end = 5;
+        }
+        else if (page >= totalPages - 2)
+        {
+            start = totalPages - 4;
+            end = totalPages;
+        }
+
+        return Enumerable
+            .Range(start, end - start + 1);
+    }
+
+
+    private async Task ScrollToTopAsync()
+    {
+        // Không bắt buộc.
+        // Giữ method để có thể bổ sung JS scroll sau này.
+        await Task.CompletedTask;
+    }
+
+
+    // =========================================================
+    // PRODUCT ACTIONS
+    // =========================================================
+
+    private void OpenProduct(int productId)
+    {
+        Navigation.NavigateTo(
+            $"/products/{productId}");
+    }
+
+
+    private async Task AddToCartAsync(
+        ProductDto product)
+    {
+        if (!AuthService.IsAuthenticated)
+        {
+            Navigation.NavigateTo("/login");
+            return;
+        }
+
+
+        if (product.Stock <= 0 ||
+            !product.IsActive)
+        {
+            return;
+        }
+
+
+        try
+        {
+            await CartService.AddAsync(
+                product.Id);
+
+            toastMessage =
+                $"{product.Name} đã được thêm vào giỏ.";
+
+            StateHasChanged();
+
+            await Task.Delay(2200);
+
+            toastMessage = string.Empty;
+
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            toastMessage =
+                string.IsNullOrWhiteSpace(ex.Message)
+                    ? "Không thể thêm sản phẩm vào giỏ."
+                    : ex.Message;
+
+            StateHasChanged();
+
+            await Task.Delay(3000);
+
+            toastMessage = string.Empty;
+
+            StateHasChanged();
+        }
+    }
+
+    
+}
