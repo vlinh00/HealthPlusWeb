@@ -11,6 +11,7 @@
 @inject CartService CartService
 @inject AuthService AuthService
 
+
 <PageTitle>Sản phẩm | HealthPlus</PageTitle>
 
 <div class="products-page">
@@ -75,9 +76,7 @@
 
                     @if (selectedCategoryId.HasValue)
                     {
-                        <button type="button"
-                                class="clear-category-button"
-                                @onclick="ClearCategoryAsync">
+                        <button type="button" class="clear-category-button" @onclick="ClearCategoryAsync">
 
                             Xóa danh mục
 
@@ -104,10 +103,8 @@
                 {
                     <div class="category-list">
 
-                        <button type="button"
-                                class="category-chip @(selectedCategoryId == null ? "active" : "")"
-                                disabled="@loading"
-                                @onclick="SelectAllCategoriesAsync">
+                        <button type="button" class="category-chip @(selectedCategoryId == null ? "active" : "")"
+                                disabled="@loading" @onclick="SelectAllCategoriesAsync">
 
                             <i class="bi bi-grid"></i>
 
@@ -118,10 +115,8 @@
 
                         @foreach (var category in categories)
                         {
-                            <button type="button"
-                                    class="category-chip @(selectedCategoryId == category.Id ? "active" : "")"
-                                    disabled="@loading"
-                                    @onclick="() => SelectCategoryAsync(category.Id)">
+                            <button type="button" class="category-chip @(selectedCategoryId == category.Id ? "active" : "")"
+                                    disabled="@loading" @onclick="() => SelectCategoryAsync(category.Id)">
 
                                 <i class="bi bi-capsule"></i>
 
@@ -154,19 +149,12 @@
 
                     <i class="bi bi-search"></i>
 
-                    <input type="text"
-                           placeholder="Tìm kiếm sản phẩm..."
-                           @bind="searchText"
-                           @bind:event="oninput"
-                           @onkeydown="HandleSearchKeyDown"
-                           disabled="@loading" />
+                    <input type="text" placeholder="Tìm kiếm sản phẩm..." @bind="searchText" @bind:event="oninput"
+                           @onkeydown="HandleSearchKeyDown" disabled="@loading" />
 
                     @if (!string.IsNullOrWhiteSpace(searchText))
                     {
-                        <button type="button"
-                                class="search-clear"
-                                title="Xóa tìm kiếm"
-                                @onclick="ClearSearchAsync">
+                        <button type="button" class="search-clear" title="Xóa tìm kiếm" @onclick="ClearSearchAsync">
 
                             <i class="bi bi-x"></i>
 
@@ -182,9 +170,7 @@
 
                     <i class="bi bi-sort-down"></i>
 
-                    <select value="@sort"
-                            @onchange="OnSortChanged"
-                            disabled="@loading">
+                    <select value="@sort" @onchange="OnSortChanged" disabled="@loading">
 
                         <option value="">
                             Sắp xếp
@@ -232,9 +218,7 @@
                                 @searchText
                             </span>
 
-                            <button type="button"
-                                    title="Xóa tìm kiếm"
-                                    @onclick="ClearSearchAsync">
+                            <button type="button" title="Xóa tìm kiếm" @onclick="ClearSearchAsync">
 
                                 <i class="bi bi-x"></i>
 
@@ -260,9 +244,7 @@
                                     @selectedCategory.Name
                                 </span>
 
-                                <button type="button"
-                                        title="Xóa danh mục"
-                                        @onclick="ClearCategoryAsync">
+                                <button type="button" title="Xóa danh mục" @onclick="ClearCategoryAsync">
 
                                     <i class="bi bi-x"></i>
 
@@ -283,9 +265,7 @@
                                 @GetSortText()
                             </span>
 
-                            <button type="button"
-                                    title="Xóa sắp xếp"
-                                    @onclick="ClearSortAsync">
+                            <button type="button" title="Xóa sắp xếp" @onclick="ClearSortAsync">
 
                                 <i class="bi bi-x"></i>
 
@@ -295,9 +275,7 @@
                     }
 
 
-                    <button type="button"
-                            class="clear-all-button"
-                            @onclick="ClearAllFiltersAsync">
+                    <button type="button" class="clear-all-button" @onclick="ClearAllFiltersAsync">
 
                         Xóa tất cả
 
@@ -389,9 +367,7 @@
                         @errorMessage
                     </p>
 
-                    <button type="button"
-                            class="products-primary-button"
-                            @onclick="LoadProductsAsync">
+                    <button type="button" class="products-primary-button" @onclick="LoadProductsAsync">
 
                         <i class="bi bi-arrow-clockwise"></i>
 
@@ -423,9 +399,7 @@
 
                     @if (HasActiveFilters)
                     {
-                        <button type="button"
-                                class="products-outline-button"
-                                @onclick="ClearAllFiltersAsync">
+                        <button type="button" class="products-outline-button" @onclick="ClearAllFiltersAsync">
 
                             <i class="bi bi-arrow-counterclockwise"></i>
 
@@ -435,9 +409,7 @@
                     }
                     else
                     {
-                        <button type="button"
-                                class="products-outline-button"
-                                @onclick="LoadProductsAsync">
+                        <button type="button" class="products-outline-button" @onclick="LoadProductsAsync">
 
                             <i class="bi bi-arrow-clockwise"></i>
 
@@ -460,27 +432,12 @@
 
                             <!-- IMAGE -->
 
-                            <button type="button"
-                                    class="product-image"
-                                    aria-label="Xem @product.Name"
+                            <button type="button" class="product-image" aria-label="Xem @product.Name"
                                     @onclick="() => OpenProduct(product.Id)">
 
-                                @if (!string.IsNullOrWhiteSpace(product.ImageUrl))
-                                {
-                                    <img src="@product.ImageUrl"
-                                         alt="@product.Name"
-                                         loading="lazy" />
-                                }
-                                else
-                                {
-                                    <div class="product-placeholder">
-
-                                        <i class="bi bi-capsule"></i>
-
-                                    </div>
-                                }
-
-
+                                <ProductImage ImageUrl="@product.ImageUrl" Alt="@product.Name" CssClass="product-image-content"
+                                              PlaceholderClass="product-placeholder" />
+                               
                                 @if (!product.IsActive)
                                 {
                                     <span class="product-status">
@@ -502,9 +459,7 @@
                                 </span>
 
 
-                                <button type="button"
-                                        class="product-name"
-                                        title="@product.Name"
+                                <button type="button" class="product-name" title="@product.Name"
                                         @onclick="() => OpenProduct(product.Id)">
 
                                     @product.Name
@@ -546,9 +501,7 @@
                                     </strong>
 
 
-                                    <button type="button"
-                                            class="product-detail-button"
-                                            title="Xem chi tiết"
+                                    <button type="button" class="product-detail-button" title="Xem chi tiết"
                                             @onclick="() => OpenProduct(product.Id)">
 
                                         <i class="bi bi-arrow-up-right"></i>
@@ -558,8 +511,7 @@
                                 </div>
 
 
-                                <button type="button"
-                                        class="add-cart-button"
+                                <button type="button" class="add-cart-button"
                                         disabled="@(product.Stock <= 0 || !product.IsActive)"
                                         @onclick="() => AddToCartAsync(product)">
 
@@ -597,11 +549,8 @@
                 {
                     <div class="products-pagination">
 
-                        <button type="button"
-                                class="pagination-button"
-                                disabled="@(page <= 1 || loading)"
-                                aria-label="Trang trước"
-                                @onclick="PreviousPageAsync">
+                        <button type="button" class="pagination-button" disabled="@(page <= 1 || loading)"
+                                aria-label="Trang trước" @onclick="PreviousPageAsync">
 
                             <i class="bi bi-chevron-left"></i>
 
@@ -610,10 +559,8 @@
 
                         @foreach (var pageNumber in GetPageNumbers())
                         {
-                            <button type="button"
-                                    class="pagination-button @(pageNumber == page ? "active" : "")"
-                                    disabled="@loading"
-                                    @onclick="() => GoToPageAsync(pageNumber)">
+                            <button type="button" class="pagination-button @(pageNumber == page ? "active" : "")"
+                                    disabled="@loading" @onclick="() => GoToPageAsync(pageNumber)">
 
                                 @pageNumber
 
@@ -621,11 +568,8 @@
                         }
 
 
-                        <button type="button"
-                                class="pagination-button"
-                                disabled="@(page >= products.TotalPages || loading)"
-                                aria-label="Trang sau"
-                                @onclick="NextPageAsync">
+                        <button type="button" class="pagination-button" disabled="@(page >= products.TotalPages || loading)"
+                                aria-label="Trang sau" @onclick="NextPageAsync">
 
                             <i class="bi bi-chevron-right"></i>
 
@@ -1099,4 +1043,5 @@
         }
     }
 
+    
 }

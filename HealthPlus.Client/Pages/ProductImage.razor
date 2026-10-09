@@ -1,0 +1,51 @@
+@inject IConfiguration Configuration
+
+@if (!string.IsNullOrWhiteSpace(ImageUrl) && !imageFailed)
+{
+    <img src="@GetImageUrl(ImageUrl)"
+         alt="@Alt"
+         class="@CssClass"
+         loading="@Loading"
+         style="@Style"
+         @onerror="HandleImageError" />
+}
+else
+{
+    <div class="@PlaceholderClass" style="@Style">
+        <i class="bi bi-capsule"></i>
+    </div>
+}
+
+@code {
+    [Parameter] public string? ImageUrl { get; set; }
+    [Parameter] public string Alt { get; set; } = "Sản phẩm";
+    [Parameter] public string CssClass { get; set; } = "product-image";
+    [Parameter] public string PlaceholderClass { get; set; } = "product-placeholder";
+    [Parameter] public string Loading { get; set; } = "lazy";
+    [Parameter] public string? Style { get; set; }
+
+    private bool imageFailed;
+    private string? previousImageUrl;
+
+    protected override void OnParametersSet()
+    {
+        if (previousImageUrl != ImageUrl)
+        {
+            imageFailed = false;
+            previousImageUrl = ImageUrl;
+        }
+    }
+
+    private string GetImageUrl(string? imageUrl)
+    {
+        var apiBaseUrl = Configuration["ApiBaseUrl"]
+            ?? "http://localhost:5204/";
+
+        return $"{apiBaseUrl.TrimEnd('/')}/{imageUrl?.TrimStart('/')}";
+    }
+
+    private void HandleImageError()
+    {
+        imageFailed = true;
+    }
+}

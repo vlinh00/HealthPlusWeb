@@ -444,17 +444,8 @@
 
                                 <div class="summary-item-image">
 
-                                    @if (!string.IsNullOrWhiteSpace(
-                                        item.ImageUrl))
-                                    {
-                                        <img src="@item.ImageUrl"
-                                             alt="@item.ProductName" />
-                                    }
-                                    else
-                                    {
-                                        <i class="bi bi-capsule"></i>
-                                    }
-
+                                   <ProductImage ImageUrl="@item.ImageUrl" Alt="@item.ProductName" CssClass="product-image-content"
+                                              PlaceholderClass="product-placeholder" />
                                 </div>
 
 
