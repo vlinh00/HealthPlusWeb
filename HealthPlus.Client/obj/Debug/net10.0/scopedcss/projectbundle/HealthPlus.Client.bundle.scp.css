@@ -392,11 +392,13 @@ main[b-z1hew8l5tf] {
     background: #f3f8f6;
 }
 
-.cart-item-image img[b-hmaxtdlypf] {
+/* Áp dụng cho phần tử bên trong ProductImage */
+.cart-item-image[b-hmaxtdlypf]  img.product-image-content {
     width: 100%;
     height: 100%;
-
-    object-fit: cover;
+    object-fit: contain;
+    object-position: center;
+    display: block;
 }
 
 .image-placeholder[b-hmaxtdlypf] {
@@ -1042,7 +1044,7 @@ main[b-z1hew8l5tf] {
 }
 /* /Pages/Checkout.razor.rz.scp.css */
 /* =========================================================
-   CHECKOUT PAGE
+   CHECKOUT PAGEe
    ========================================================= */
 
 .checkout-page[b-w0pw1zen89] {
@@ -1472,12 +1474,16 @@ main[b-z1hew8l5tf] {
     color: #94a3b8;
 }
 
-.summary-item-image img[b-w0pw1zen89] {
+/* Áp dụng cho phần tử bên trong ProductImage */
+.summary-item-image::deep img.product-image-content[b-w0pw1zen89] {
     display: block;
     width: 100%;
     height: 100%;
-    object-fit: cover;
+
+    object-fit: contain;
+    object-position: center;
 }
+
 
 .summary-item-image i[b-w0pw1zen89] {
     font-size: 23px;
@@ -6042,6 +6048,13 @@ main[b-z1hew8l5tf] {
 .products-toast > i[b-ons3qavk63] {
     color: #16a34a;
     font-size: 18px;
+}
+
+.product-image-content[b-ons3qavk63] {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
 }
 
 @keyframes toast-in-b-ons3qavk63 {

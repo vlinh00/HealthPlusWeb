@@ -41,6 +41,10 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = UGFnZXMvTm90Rm91bmQucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
 
+[/workspaces/HealthPlusWeb/HealthPlus.Client/Pages/ProductImage.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXMvUHJvZHVjdEltYWdlLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
 [/workspaces/HealthPlusWeb/HealthPlus.Client/Shared/MainLayout.razor]
 build_metadata.AdditionalFiles.TargetPath = U2hhcmVkL01haW5MYXlvdXQucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 

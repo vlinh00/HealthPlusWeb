@@ -83,17 +83,8 @@
 
                     <div class="detail-image">
 
-                        @if (!string.IsNullOrWhiteSpace(product.ImageUrl))
-                        {
-                            <img src="@product.ImageUrl"
-                                 alt="@product.Name" />
-                        }
-                        else
-                        {
-                            <div class="detail-placeholder">
-                                <i class="bi bi-capsule"></i>
-                            </div>
-                        }
+                        <ProductImage ImageUrl="@product.ImageUrl" Alt="@product.Name" CssClass="product-image-content"
+                                              PlaceholderClass="product-placeholder" />
 
                     </div>
 

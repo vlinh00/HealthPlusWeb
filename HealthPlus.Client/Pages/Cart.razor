@@ -173,16 +173,9 @@
                             <div class="cart-item">
 
                                 <div class="cart-item-image">
-                                    @if (!string.IsNullOrWhiteSpace(item.ImageUrl))
-                                    {
-                                        <img src="@item.ImageUrl" alt="@item.ProductName" />
-                                    }
-                                    else
-                                    {
-                                        <div class="image-placeholder">
-                                            <i class="bi bi-capsule"></i>
-                                        </div>
-                                    }
+                                
+                                    <ProductImage ImageUrl="@item.ImageUrl" Alt="@item.ProductName" CssClass="product-image-content"
+                                              PlaceholderClass="product-placeholder" />
                                 </div>
 
                                 <div class="cart-item-info">

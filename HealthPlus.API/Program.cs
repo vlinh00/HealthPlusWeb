@@ -101,6 +101,7 @@ builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
 
 builder.Services.AddScoped<IReportRepository, ReportRepository>();
 
+builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
 
 // =========================
 // Services
@@ -120,6 +121,7 @@ builder.Services.AddScoped<IUserService, UserService>();
 
 builder.Services.AddScoped<IReportService, ReportService>();
 
+builder.Services.AddScoped<ICategoryService, CategoryService>();
 // =========================
 // Swagger
 // =========================
@@ -166,6 +168,8 @@ app.UseCors("AllowClient");
 app.UseAuthentication();
 
 app.UseAuthorization();
+
+app.UseStaticFiles();
 
 app.MapControllers();
 

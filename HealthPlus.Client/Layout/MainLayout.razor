@@ -1,20 +1,20 @@
 ﻿@inherits LayoutComponentBase
+@implements IDisposable
 
 @using Microsoft.AspNetCore.Components.Authorization
 @using HealthPlus.Client.Services
 
 @inject AuthService AuthService
+@inject CartService CartService
 @inject NavigationManager Navigation
 
 <div class="main-layout">
 
     <header class="main-header">
-
         <div class="container main-header-inner">
 
             <!-- BRAND -->
             <a href="/" class="main-brand">
-
                 <span class="main-brand-icon">
                     <i class="bi bi-heart-pulse-fill"></i>
                 </span>
@@ -22,9 +22,7 @@
                 <span>
                     Health<span>Plus</span>
                 </span>
-
             </a>
-
 
             <!-- NAV -->
             <nav class="main-nav">
@@ -34,30 +32,35 @@
                     <span>Sản phẩm</span>
                 </a>
 
-
+                <!-- CART -->
                 <a href="/cart" class="nav-link cart-link">
+                    <span class="cart-icon-wrapper">
+                        <i class="bi bi-cart3"></i>
 
-                    <i class="bi bi-cart3"></i>
+                        @if (CartService.TotalQuantity > 0)
+                        {
+                            <span class="cart-badge">
+                                @(CartService.TotalQuantity > 99
+                                    ? "99+"
+                                    : CartService.TotalQuantity.ToString())
+                            </span>
+                        }
+                    </span>
 
                     <span>Giỏ hàng</span>
-
                 </a>
 
-
                 <AuthorizeView>
-
                     <Authorized>
 
                         <div class="user-menu">
 
                             <div class="user-info">
-
                                 <div class="user-avatar">
                                     <i class="bi bi-person-fill"></i>
                                 </div>
 
                                 <div class="user-text">
-
                                     <strong>
                                         @(AuthService.CurrentUser?.FullName
                                             ?? "Tài khoản")
@@ -67,18 +70,14 @@
                                         @(AuthService.CurrentUser?.Role
                                             ?? "Customer")
                                     </span>
-
                                 </div>
-
                             </div>
-
 
                             <button type="button"
                                     class="logout-button"
                                     @onclick="LogoutAsync">
 
                                 <i class="bi bi-box-arrow-right"></i>
-
                                 <span>Đăng xuất</span>
 
                             </button>
@@ -87,41 +86,32 @@
 
                     </Authorized>
 
-
                     <NotAuthorized>
 
                         <a href="/login" class="login-button">
-
                             <i class="bi bi-person"></i>
-
                             <span>Đăng nhập</span>
-
                         </a>
 
                     </NotAuthorized>
-
                 </AuthorizeView>
 
             </nav>
-
         </div>
-
     </header>
 
-
+    <!-- MAIN CONTENT -->
     <main>
         @Body
     </main>
 
-
+    <!-- FOOTER -->
     <footer class="main-footer">
-
         <div class="container">
 
             <div class="footer-content">
 
                 <div class="footer-brand">
-
                     <div class="footer-brand-name">
 
                         <span class="footer-brand-icon">
@@ -137,31 +127,17 @@
                     <p>
                         Chăm sóc sức khỏe theo cách tốt hơn.
                     </p>
-
                 </div>
 
-
                 <div class="footer-links">
-
-                    <a href="/products">
-                        Cửa hàng
-                    </a>
-
-                    <a href="/cart">
-                        Giỏ hàng
-                    </a>
-
-                    <a href="/orders">
-                        Đơn hàng
-                    </a>
-
+                    <a href="/products">Cửa hàng</a>
+                    <a href="/cart">Giỏ hàng</a>
+                    <a href="/orders">Đơn hàng</a>
                 </div>
 
             </div>
 
-
             <div class="footer-bottom">
-
                 <span>
                     © @DateTime.Now.Year HealthPlus
                 </span>
@@ -169,23 +145,50 @@
                 <span>
                     Sức khỏe của bạn, ưu tiên của chúng tôi.
                 </span>
-
             </div>
 
         </div>
-
     </footer>
 
 </div>
 
-
 @code {
+    protected override void OnInitialized()
+    {
+        CartService.CartChanged += OnCartChanged;
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (AuthService.IsAuthenticated)
+        {
+            try
+            {
+                await CartService.LoadAsync();
+            }
+            catch
+            {
+                // Không để lỗi tải giỏ hàng ảnh hưởng đến Layout.
+            }
+        }
+    }
+
+    private void OnCartChanged()
+    {
+        _ = InvokeAsync(StateHasChanged);
+    }
 
     private async Task LogoutAsync()
     {
         await AuthService.LogoutAsync();
 
+        CartService.Clear();
+
         Navigation.NavigateTo("/");
     }
 
+    public void Dispose()
+    {
+        CartService.CartChanged -= OnCartChanged;
+    }
 }

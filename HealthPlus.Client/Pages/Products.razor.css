@@ -966,6 +966,13 @@
     font-size: 18px;
 }
 
+.product-image-content {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+}
+
 @keyframes toast-in {
     from {
         opacity: 0;
