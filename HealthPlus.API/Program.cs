@@ -160,6 +160,8 @@ if (app.Environment.IsDevelopment())
 
 //app.UseHttpsRedirection();
 
+app.UseStaticFiles();
+
 app.UseCors("AllowClient");
 
 // IMPORTANT:
@@ -169,7 +171,7 @@ app.UseAuthentication();
 
 app.UseAuthorization();
 
-app.UseStaticFiles();
+
 
 app.MapControllers();
 

@@ -1596,6 +1596,84 @@ main[b-z1hew8l5tf] {
 }
 
 
+/* Upload ảnh sản phẩm */
+.products-admin-file-input[b-7s84jhcuyj] {
+    box-sizing: border-box;
+    width: 100%;
+    padding: 12px;
+    border: 1px dashed #b9d8c9;
+    border-radius: 10px;
+    background: #f8fcf9;
+    color: #50645a;
+    font-family: inherit;
+    font-size: 12px;
+}
+
+.products-admin-file-input[b-7s84jhcuyj]::file-selector-button {
+    margin-right: 12px;
+    padding: 8px 12px;
+    border: 0;
+    border-radius: 7px;
+    background: #e3f7ef;
+    color: #137b58;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.products-admin-help[b-7s84jhcuyj] {
+    display: block;
+    margin-top: 5px;
+    color: #829189;
+    font-size: 11px;
+    font-weight: 400;
+}
+
+.products-admin-image-preview[b-7s84jhcuyj] {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-top: 12px;
+    padding: 12px;
+    border: 1px solid #e1ebe5;
+    border-radius: 12px;
+    background: #fbfdfc;
+}
+
+.products-admin-image-preview img[b-7s84jhcuyj] {
+    display: block;
+    flex: 0 0 100px;
+    width: 100px;
+    height: 100px;
+    object-fit: contain;
+    border-radius: 9px;
+    background: #ffffff;
+}
+
+.products-admin-image-info[b-7s84jhcuyj] {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    min-width: 0;
+}
+
+.products-admin-image-info strong[b-7s84jhcuyj] {
+    overflow-wrap: anywhere;
+    color: #31463d;
+    font-size: 12px;
+}
+
+@media (max-width: 650px) {
+    .products-admin-image-preview img[b-7s84jhcuyj] {
+        flex-basis: 80px;
+        width: 80px;
+        height: 80px;
+    }
+}
+
+
+
 /* =========================================
    19. TABLET
 ========================================= */
