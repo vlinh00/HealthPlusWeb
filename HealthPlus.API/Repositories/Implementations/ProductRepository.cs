@@ -69,7 +69,7 @@ public class ProductRepository : IProductRepository
                 query.OrderByDescending(x => x.Id),
                 
             _ =>
-                query.OrderBy(x => x.Id)
+                query.OrderByDescending(x => x.Id)
         };
 
         // Pagination
